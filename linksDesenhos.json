@@ -1,4 +1,6 @@
-"https://www.youtube.com/embed/PsVVCilvVJE?autoplay=1&start=15&loop=1&playlist=PsVVCilvVJE",
+{
+    "videos": [
+        "https://www.youtube.com/embed/PsVVCilvVJE?autoplay=1&start=15&loop=1&playlist=PsVVCilvVJE",
 "https://www.youtube.com/embed/d99lVZXc56U?autoplay=1&start=15&loop=1&playlist=d99lVZXc56U",
 "https://www.youtube.com/embed/e5IUYHm78ts?autoplay=1&start=15&loop=1&playlist=e5IUYHm78ts",
 "https://www.youtube.com/embed/36v6XTKw1XI?autoplay=1&start=15&loop=1&playlist=36v6XTKw1XI",
@@ -34,3 +36,5 @@
 "https://www.youtube.com/embed/2o06dwjAEks?autoplay=1&start=15&loop=1&playlist=2o06dwjAEks",
 "https://www.youtube.com/embed/qJMMav78ocM?autoplay=1&start=15&loop=1&playlist=qJMMav78ocM",
 "https://www.youtube.com/embed/uz18ACdBg4w?autoplay=1&start=15&loop=1&playlist=uz18ACdBg4w"
+]
+}

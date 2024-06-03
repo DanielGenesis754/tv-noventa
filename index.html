@@ -6,7 +6,6 @@
     <title>TV Antiga</title>
     <link rel="stylesheet" href="estilo.css">
     <style>
-        /* Esconder a caixa quando a largura da janela for 1100px ou menor */
         @media (max-width: 1100px) {
             .programasc {
                 display: none;
@@ -23,45 +22,27 @@
             <div class="checkbox-container">
                 <label><input type="checkbox" id="desenhosCheckbox"> Desenhos Animados</label>
             </div>
-            <div class="checkbox-container">
-                <label><input type="checkbox" id="filmesCheckbox"> Filmes</label>
-            </div>
         </section>
-        <!-- Frame de vídeo dentro da imagem da TV -->
         <div id="video-frame-container">
             <img id="tv-image" src="oldtelevision.png" alt="TV Antiga">
             <div class="video-container" id="video-frame"></div>
         </div>
-        <!-- Botões para iniciar e trocar os vídeos -->
         <button id="togglePlayback">Ligar TV</button>
         <button id="nextVideo">></button>
-        <!-- Área onde os vídeos serão reproduzidos -->
     </main>
 
     <script>
-        const videos = [];
-        const desenhosVideos = [];
-        const transitionVideoUrl = "C:\\Users\\morad\\OneDrive\\Documentos\\GitHub\\curso-JS\\trabalho\\TvStatic.mp4";
+        const videos = [
+        "https://www.youtube.com/embed/6he_c73pwjg?autoplay=1&start=15&loop=1&playlist=6he_c73pwjg",
+        "https://www.youtube.com/embed/LC_MAVPZ_w8?autoplay=1&start=15&loop=1&playlist=LC_MAVPZ_w8",
+        ];
+        const desenhosVideos = [
+        "https://www.youtube.com/embed/PsVVCilvVJE?autoplay=1&start=15&loop=1&playlist=PsVVCilvVJE"
+        ];
+        const transitionVideoUrl = "C:\Users\morad\OneDrive\Documentos\GitHub\tv-noventa\TvStatic.mp4";
 
         let isPlaybackOn = false;
         let lastVideoIndex = -1;
-
-        async function loadVideoLinks() {
-            try {
-                const [propagandasResponse, desenhosResponse] = await Promise.all([
-                    fetch('linksPropagandas.json'),
-                    fetch('linksDesenhos.json')
-                ]);
-
-                const propagandasData = await propagandasResponse.json();
-                const desenhosData = await desenhosResponse.json();
-
-                propagandasData.videos.forEach(videoUrl => videos.push(videoUrl));
-                desenhosData.videos.forEach(videoUrl => desenhosVideos.push(videoUrl));
-            } catch (error) {
-                console.error('Erro ao carregar os vídeos:', error);
-            }
-        }
 
         function getRandomVideo(videosArray, lastIndex) {
             let randomIndex;
@@ -115,7 +96,7 @@
                         <iframe 
                             width="560" 
                             height="315" 
-                            src="${nextVideo.url.replace("watch?v=", "embed/")}" 
+                            src="${nextVideo.url}" 
                             title="YouTube video player" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -142,11 +123,11 @@
         }
 
         function updatePlaybackButtonVisibility() {
-            const nextVideoButton = document.getElementById('togglePlayback');
+            const togglePlaybackButton = document.getElementById('togglePlayback');
             if (document.getElementById('programasCheckbox').checked || document.getElementById('desenhosCheckbox').checked) {
-                nextVideoButton.removeAttribute('disabled');
+                togglePlaybackButton.removeAttribute('disabled');
             } else {
-                nextVideoButton.setAttribute('disabled', true);
+                togglePlaybackButton.setAttribute('disabled', true);
             }
         }
 
