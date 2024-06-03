@@ -1,0 +1,144 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: black;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+section {
+    margin: 20px 0;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    background: #000;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+#video-frame video {
+    pointer-events: none;
+}
+
+/* Estilo para desativar a interação do mouse com o player de vídeo */
+#video-frame-container {
+    position: relative;
+    width: 100%;
+    max-width: 750px; /* Ajuste conforme necessário */
+}
+
+#tv-image {
+    width: 100%;
+    height: auto;
+    display: flex;
+    position: relative;
+    z-index: 2;
+}
+
+#video-frame {
+    position: absolute;
+    left: 0; /* Ajustado para 0 para posicionar o player de vídeo no canto esquerdo */
+    top: 8.9%; /* Ajuste conforme necessário */
+    width: 70%; /* Ajuste conforme necessário */
+    height: 66%; /* Ajuste conforme necessário */
+    left: 15%;
+}
+
+.video-container {
+    position: relative;
+    width: 150%;
+    height: 100%;
+    padding-bottom: 0%; /* 16:9 aspect ratio */
+    overflow: hidden;
+}
+
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Estilo para as checkboxes */
+.checkbox-container {
+    margin-right: 200px; /* Ajuste o espaçamento entre as checkboxes conforme necessário */
+    flex: 2; /* Ocupar todo o espaço disponível restante */
+    display: flex; /* Usar um layout flexível para os checkboxes */
+    flex-direction: column; /* Alinhar as caixas de seleção verticalmente */
+    justify-content: flex-start; /* Alinhar os itens verticalmente no topo */
+    align-items: stretch; /* Alinhar os itens horizontalmente */
+    position: relative; /* Posicionar o container relativamente */
+    z-index: 10; /* Atribuir um z-index maior */
+  }
+  
+  .checkbox-container input[type="checkbox"] {
+    margin-bottom: 10px; /* Ajuste o espaçamento entre as caixas de seleção */
+    top: 20px; /* Ajustar a posição vertical das caixas de seleção */
+  }
+.programasc{
+    padding: 0;
+    margin: 0;
+    margin-bottom: -150px;
+    margin-top: 50px;
+    margin-left: 65%;
+    font-size: 1.15em;
+    font-weight: bolder;
+    color: rgb(0, 255, 0);
+    background-color: #616060;
+    text-shadow: 1px 1px black;
+}

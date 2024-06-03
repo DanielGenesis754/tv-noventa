@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Antiga</title>
+    <link rel="stylesheet" href="estilo.css">
+    <style>
+        /* Esconder a caixa quando a largura da janela for 1100px ou menor */
+        @media (max-width: 1100px) {
+            .programasc {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section id="programas" class="programasc">
+            <div class="checkbox-container">
+                <label><input type="checkbox" id="programasCheckbox"> Propagandas</label>
+            </div>
+            <div class="checkbox-container">
+                <label><input type="checkbox" id="desenhosCheckbox"> Desenhos Animados</label>
+            </div>
+            <div class="checkbox-container">
+                <label><input type="checkbox" id="filmesCheckbox"> Filmes</label>
+            </div>
+        </section>
+        <!-- Frame de vídeo dentro da imagem da TV -->
+        <div id="video-frame-container">
+            <img id="tv-image" src="oldtelevision.png" alt="TV Antiga">
+            <div class="video-container" id="video-frame"></div>
+        </div>
+        <!-- Botões para iniciar e trocar os vídeos -->
+        <button id="togglePlayback">Ligar TV</button>
+        <button id="nextVideo">></button>
+        <!-- Área onde os vídeos serão reproduzidos -->
+    </main>
+
+    <script>
+        const videos = [];
+        const desenhosVideos = [];
+        const transitionVideoUrl = "C:\\Users\\morad\\OneDrive\\Documentos\\GitHub\\curso-JS\\trabalho\\TvStatic.mp4";
+
+        let isPlaybackOn = false;
+        let lastVideoIndex = -1;
+
+        async function loadVideoLinks() {
+            try {
+                const [propagandasResponse, desenhosResponse] = await Promise.all([
+                    fetch('linksPropagandas.json'),
+                    fetch('linksDesenhos.json')
+                ]);
+
+                const propagandasData = await propagandasResponse.json();
+                const desenhosData = await desenhosResponse.json();
+
+                propagandasData.videos.forEach(videoUrl => videos.push(videoUrl));
+                desenhosData.videos.forEach(videoUrl => desenhosVideos.push(videoUrl));
+            } catch (error) {
+                console.error('Erro ao carregar os vídeos:', error);
+            }
+        }
+
+        function getRandomVideo(videosArray, lastIndex) {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * videosArray.length);
+            } while (randomIndex === lastIndex);
+            return { url: videosArray[randomIndex], index: randomIndex };
+        }
+
+        function getNextRandomVideo() {
+            let videosArray = [];
+
+            if (document.getElementById('programasCheckbox').checked) {
+                videosArray = videosArray.concat(videos);
+            }
+
+            if (document.getElementById('desenhosCheckbox').checked) {
+                videosArray = videosArray.concat(desenhosVideos);
+            }
+
+            if (videosArray.length === 0) {
+                return { url: null, index: -1 };
+            }
+
+            return getRandomVideo(videosArray, lastVideoIndex);
+        }
+
+        function playTransitionVideo(callback) {
+            const videoFrame = document.getElementById('video-frame');
+            videoFrame.innerHTML = `
+                <video 
+                    width="560" 
+                    height="315" 
+                    src="${transitionVideoUrl}" 
+                    type="video/mp4"
+                    autoplay
+                    muted
+                ></video>`;
+            
+            const transitionVideoElement = videoFrame.querySelector('video');
+            transitionVideoElement.onended = callback;
+        }
+
+        function playNextVideo() {
+            const videoFrame = document.getElementById('video-frame');
+            const nextVideo = getNextRandomVideo();
+
+            if (nextVideo.url) {
+                playTransitionVideo(() => {
+                    videoFrame.innerHTML = `
+                        <iframe 
+                            width="560" 
+                            height="315" 
+                            src="${nextVideo.url.replace("watch?v=", "embed/")}" 
+                            title="YouTube video player" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            referrerpolicy="strict-origin-when-cross-origin" 
+                            allowfullscreen
+                        ></iframe>`;
+                });
+            }
+
+            lastVideoIndex = nextVideo.index;
+        }
+
+        function togglePlayback() {
+            if (isPlaybackOn) {
+                const videoFrame = document.getElementById('video-frame');
+                videoFrame.innerHTML = '';
+                document.getElementById('togglePlayback').innerText = 'Ligar TV';
+                isPlaybackOn = false;
+            } else {
+                playNextVideo();
+                document.getElementById('togglePlayback').innerText = 'Desligar TV';
+                isPlaybackOn = true;
+            }
+        }
+
+        function updatePlaybackButtonVisibility() {
+            const nextVideoButton = document.getElementById('togglePlayback');
+            if (document.getElementById('programasCheckbox').checked || document.getElementById('desenhosCheckbox').checked) {
+                nextVideoButton.removeAttribute('disabled');
+            } else {
+                nextVideoButton.setAttribute('disabled', true);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVideoLinks().then(() => {
+                updatePlaybackButtonVisibility();
+                document.getElementById('programasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+                document.getElementById('desenhosCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+                document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
+                document.getElementById('nextVideo').addEventListener('click', () => {
+                    if (isPlaybackOn) {
+                        playNextVideo();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
