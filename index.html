@@ -32,11 +32,12 @@
         <!-- Botões para iniciar e trocar os vídeos -->
         <button id="togglePlayback">Ligar TV</button>
         <button id="nextVideo">></button>
-        <!-- Área onde os vídeos serão reproduzidos -->
+    </main>
 
     <script>
         const videos = [
-        "https://www.youtube.com/embed/6he_c73pwjg?autoplay=1&start=15&loop=1&playlist=6he_c73pwjg",
+            // URLs dos vídeos de propagandas
+            "https://www.youtube.com/embed/6he_c73pwjg?autoplay=1&start=15&loop=1&playlist=6he_c73pwjg",
 "https://www.youtube.com/embed/LC_MAVPZ_w8?autoplay=1&start=15&loop=1&playlist=LC_MAVPZ_w8",
 "https://www.youtube.com/embed/drwS88sV6C4?autoplay=1&start=15&loop=1&playlist=drwS88sV6C4",
 "https://www.youtube.com/embed/-DFXhXvjK6g?autoplay=1&start=15&loop=1&playlist=-DFXhXvjK6g",
@@ -93,11 +94,11 @@
 "https://www.youtube.com/embed/ty3d3ttAbcs?autoplay=1&start=15&loop=1&playlist=ty3d3ttAbcs",
 "https://www.youtube.com/embed/5zGnEV-SEsw?autoplay=1&start=15&loop=1&playlist=5zGnEV-SEsw",
 "https://www.youtube.com/embed/nuXX8fwDnVg?autoplay=1&start=15&loop=1&playlist=nuXX8fwDnVg"
-
         ];
 
         const desenhosVideos = [
-        "https://www.youtube.com/embed/PsVVCilvVJE?autoplay=1&start=15&loop=1&playlist=PsVVCilvVJE",
+            // URLs dos vídeos de desenhos animados
+            "https://www.youtube.com/embed/PsVVCilvVJE?autoplay=1&start=15&loop=1&playlist=PsVVCilvVJE",
 "https://www.youtube.com/embed/d99lVZXc56U?autoplay=1&start=15&loop=1&playlist=d99lVZXc56U",
 "https://www.youtube.com/embed/e5IUYHm78ts?autoplay=1&start=15&loop=1&playlist=e5IUYHm78ts",
 "https://www.youtube.com/embed/36v6XTKw1XI?autoplay=1&start=15&loop=1&playlist=36v6XTKw1XI",
@@ -133,9 +134,7 @@
 "https://www.youtube.com/embed/2o06dwjAEks?autoplay=1&start=15&loop=1&playlist=2o06dwjAEks",
 "https://www.youtube.com/embed/qJMMav78ocM?autoplay=1&start=15&loop=1&playlist=qJMMav78ocM",
 "https://www.youtube.com/embed/uz18ACdBg4w?autoplay=1&start=15&loop=1&playlist=uz18ACdBg4w"
-
         ];
-        const transitionVideoUrl = "C:\\Users\\morad\\OneDrive\\Documentos\\GitHub\\tv-noventa\\TvStatic.mp4";
 
         let isPlaybackOn = false;
         let lastVideoIndex = -1;
@@ -166,40 +165,22 @@
             return getRandomVideo(videosArray, lastVideoIndex);
         }
 
-        function playTransitionVideo(callback) {
-            const videoFrame = document.getElementById('video-frame');
-            videoFrame.innerHTML = `
-                <video 
-                    width="560" 
-                    height="315" 
-                    src="${transitionVideoUrl}" 
-                    type="video/mp4"
-                    autoplay
-                    muted
-                ></video>`;
-
-            const transitionVideoElement = videoFrame.querySelector('video');
-            transitionVideoElement.onended = callback;
-        }
-
         function playNextVideo() {
             const videoFrame = document.getElementById('video-frame');
             const nextVideo = getNextRandomVideo();
 
             if (nextVideo.url) {
-                playTransitionVideo(() => {
-                    videoFrame.innerHTML = `
-                        <iframe 
-                            width="560" 
-                            height="315" 
-                            src="${nextVideo.url}" 
-                            title="YouTube video player" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            referrerpolicy="strict-origin-when-cross-origin" 
-                            allowfullscreen
-                        ></iframe>`;
-                });
+                videoFrame.innerHTML = `
+                    <iframe 
+                        width="560" 
+                        height="315" 
+                        src="${nextVideo.url}" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        referrerpolicy="strict-origin-when-cross-origin" 
+                        allowfullscreen
+                    ></iframe>`;
             }
 
             lastVideoIndex = nextVideo.index;
@@ -236,14 +217,6 @@
                 if (isPlaybackOn) {
                     playNextVideo();
                 }
-            });
-            document.querySelector('a[href="#programas"]').addEventListener('click', () => {
-                document.getElementById('programasCheckbox').checked = true;
-                updatePlaybackButtonVisibility();
-            });
-            document.querySelector('a[href="#desenhos"]').addEventListener('click', () => {
-                document.getElementById('desenhosCheckbox').checked = true;
-                updatePlaybackButtonVisibility();
             });
         });
     </script>
