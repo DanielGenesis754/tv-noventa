@@ -59,6 +59,9 @@
             <div class="checkbox-container">
                 <label><input type="checkbox" id="desenhosCheckbox" checked> Desenhos Animados</label>
             </div>
+            <div class="checkbox-container">
+                <label><input type="checkbox" id="filmesCheckbox" checked> Filmes</label>
+            </div>
         </section>
         <!-- Frame de vídeo dentro da imagem da TV -->
         <div id="video-frame-container">
@@ -129,7 +132,14 @@
 "https://www.youtube.com/embed/kL35cGsTpyc?autoplay=1&start=15&loop=1&playlist=kL35cGsTpyc",
 "https://www.youtube.com/embed/ty3d3ttAbcs?autoplay=1&start=15&loop=1&playlist=ty3d3ttAbcs",
 "https://www.youtube.com/embed/5zGnEV-SEsw?autoplay=1&start=15&loop=1&playlist=5zGnEV-SEsw",
-"https://www.youtube.com/embed/nuXX8fwDnVg?autoplay=1&start=15&loop=1&playlist=nuXX8fwDnVg"
+"https://www.youtube.com/embed/nuXX8fwDnVg?autoplay=1&start=15&loop=1&playlist=nuXX8fwDnVg",
+"https://www.youtube.com/embed/P4cVxkvgFdY?autoplay=1&start=15&loop=1&playlist=P4cVxkvgFdY",
+"https://www.youtube.com/embed/YClpMK5CoZE?autoplay=1&start=15&loop=1&playlist=YClpMK5CoZE",
+"https://www.youtube.com/embed/SMMKrIWCGtE?autoplay=1&start=15&loop=1&playlist=SMMKrIWCGtE",
+"https://www.youtube.com/embed/kCPqEdXPhW4?autoplay=1&start=15&loop=1&playlist=kCPqEdXPhW4",
+"https://www.youtube.com/embed/9U4BXbBDvlA?autoplay=1&start=15&loop=1&playlist=9U4BXbBDvlA",
+"https://www.youtube.com/embed/hF_aL0WesKU?autoplay=1&start=15&loop=1&playlist=hF_aL0WesKU",
+"https://www.youtube.com/embed/QQ6v0S450rQ?autoplay=1&start=15&loop=1&playlist=QQ6v0S450rQ"
         ];
 
         const desenhosVideos = [
@@ -169,7 +179,26 @@
 "https://www.youtube.com/embed/ORYJOyew2M8?autoplay=1&start=15&loop=1&playlist=ORYJOyew2M8",
 "https://www.youtube.com/embed/2o06dwjAEks?autoplay=1&start=15&loop=1&playlist=2o06dwjAEks",
 "https://www.youtube.com/embed/qJMMav78ocM?autoplay=1&start=15&loop=1&playlist=qJMMav78ocM",
-"https://www.youtube.com/embed/uz18ACdBg4w?autoplay=1&start=15&loop=1&playlist=uz18ACdBg4w"
+"https://www.youtube.com/embed/uz18ACdBg4w?autoplay=1&start=15&loop=1&playlist=uz18ACdBg4w",
+"https://www.youtube.com/embed/Sdji4a86guk?autoplay=1&start=15&loop=1&playlist=Sdji4a86guk"
+        ];
+
+        const filmesVideos = [
+            // URLs dos vídeos de filmes
+            "https://www.youtube.com/embed/w_UKK8AORsU?autoplay=1&start=15&loop=1&playlist=w_UKK8AORsU",
+            "https://www.youtube.com/embed/oCHwWHvXijY?autoplay=1&start=15&loop=1&playlist=oCHwWHvXijY",
+"https://www.youtube.com/embed/ZxvA92-z4j4?autoplay=1&start=15&loop=1&playlist=ZxvA92-z4j4",
+"https://www.youtube.com/embed/--mHGqAnVhY?autoplay=1&start=15&loop=1&playlist=--mHGqAnVhY",
+"https://www.youtube.com/embed/2ThHmQvi8gw?autoplay=1&start=15&loop=1&playlist=2ThHmQvi8gw",
+"https://www.youtube.com/embed/S1OYm0s_8kE?autoplay=1&start=15&loop=1&playlist=S1OYm0s_8kE",
+"https://www.youtube.com/embed/jfOgsHOapj8?autoplay=1&start=15&loop=1&playlist=jfOgsHOapj8",
+"https://www.youtube.com/embed/Mzg0OdTZuiU?autoplay=1&start=15&loop=1&playlist=Mzg0OdTZuiU",
+"https://www.youtube.com/embed/B9wQd-2G45E?autoplay=1&start=15&loop=1&playlist=B9wQd-2G45E",
+"https://www.youtube.com/embed/oODSDRrAX50?autoplay=1&start=15&loop=1&playlist=oODSDRrAX50",
+"https://www.youtube.com/embed/qCotJqI5-k4?autoplay=1&start=15&loop=1&playlist=qCotJqI5-k4",
+"https://www.youtube.com/embed/LowuyZ3_B84?autoplay=1&start=15&loop=1&playlist=LowuyZ3_B84",
+"https://www.youtube.com/embed/zKvRinhCl9g?autoplay=1&start=15&loop=1&playlist=zKvRinhCl9g",
+"https://www.youtube.com/embed/pFCkVf3aiOI?autoplay=1&start=15&loop=1&playlist=pFCkVf3aiOI"
         ];
 
         let isPlaybackOn = false;
@@ -192,6 +221,10 @@
 
             if (document.getElementById('desenhosCheckbox').checked) {
                 videosArray = videosArray.concat(desenhosVideos);
+            }
+
+            if (document.getElementById('filmesCheckbox').checked) {
+                videosArray = videosArray.concat(filmesVideos);
             }
 
             if (videosArray.length === 0) {
@@ -248,7 +281,7 @@
 
         function updatePlaybackButtonVisibility() {
             const nextVideoButton = document.getElementById('togglePlayback');
-            if (document.getElementById('programasCheckbox').checked || document.getElementById('desenhosCheckbox').checked) {
+            if (document.getElementById('programasCheckbox').checked || document.getElementById('desenhosCheckbox').checked || document.getElementById('filmesCheckbox').checked) {
                 nextVideoButton.removeAttribute('disabled');
             } else {
                 nextVideoButton.setAttribute('disabled', true);
@@ -259,6 +292,7 @@
             updatePlaybackButtonVisibility();
             document.getElementById('programasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
             document.getElementById('desenhosCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+            document.getElementById('filmesCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
             document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
             document.getElementById('nextVideo').addEventListener('click', () => {
                 if (isPlaybackOn) {
