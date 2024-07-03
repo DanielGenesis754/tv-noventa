@@ -136,10 +136,13 @@ button:hover {
     margin: 0;
     margin-bottom: -150px;
     margin-top: 50px;
-    margin-left: 65%;
+    margin-left: 680px;
     font-size: 1.15em;
     font-weight: bolder;
     color: rgb(0, 255, 0);
     background-color: #616060;
     text-shadow: 1px 1px black;
+    position: absolute;
+    border: 0px;
+    white-space: nowrap;
 }
