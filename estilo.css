@@ -146,3 +146,85 @@ button:hover {
     border: 0px;
     white-space: nowrap;
 }
+/* ==========================
+   EFEITO DE ESTÁTICA
+========================== */
+
+.static {
+    background: url('./assets/static.gif')
+        center center / cover no-repeat;
+
+    position: relative;
+
+    top: 8%;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 90%;
+
+    z-index: 1;
+
+    opacity: 1;
+
+    transition: opacity .5s ease-out;
+}
+
+.hidden {
+    opacity: 0;
+}
+
+/* ==========================
+   TV
+========================== */
+
+#video-frame-container {
+
+    position: relative;
+
+    width: 650px;
+
+    height: 650px;
+}
+
+#tv-image {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 650px;
+
+    height: 650px;
+}
+
+.video-container {
+
+    position: absolute;
+
+    top: 14%;
+
+    left: 14%;
+
+    width: 72%;
+
+    height: 72%;
+
+    z-index: 1;
+}
+
+/* ==========================
+   BOTÕES
+========================== */
+
+.controls {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
