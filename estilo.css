@@ -151,7 +151,7 @@ button:hover {
 ========================== */
 
 .static {
-    background: url('./assets/static.gif')
+    background: url('static.gif')
         center center / cover no-repeat;
 
     position: relative;
