@@ -3,9 +3,9 @@
 // ==========================
 
 const ARQUIVOS_JSON = {
-    propagandas: "./json/linksPropagandas.json",
-    desenhos: "./json/linksDesenhos.json",
-    filmes: "./json/linksFilmes.json"
+    propagandas: "linksPropagandas.json",
+    desenhos: "linksDesenhos.json",
+    filmes: "linksFilmes.json"
 };
 
 let propagandasVideos = [];
