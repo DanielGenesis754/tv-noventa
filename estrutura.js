@@ -1,369 +1,127 @@
-// ==========================
-// CONFIGURAÇÃO
-// ==========================
+const videos = [
+    "https://www.youtube.com/embed/6he_c73pwjg?autoplay=1",
+    "https://www.youtube.com/embed/LC_MAVPZ_w8?autoplay=1",
+    "https://www.youtube.com/embed/drwS88sV6C4?autoplay=1",
+    "https://www.youtube.com/embed/-DFXhXvjK6g?autoplay=1",
+    "https://www.youtube.com/embed/OZ_q_ikyIUw?autoplay=1"
+];
 
-const ARQUIVOS_JSON = {
-    propagandas: "linksPropagandas.json",
-    desenhos: "linksDesenhos.json",
-    filmes: "linksFilmes.json"
-};
+const desenhosVideos = [
+    "https://www.youtube.com/embed/PsVVCilvVJE?autoplay=1",
+    "https://www.youtube.com/embed/evvVvRTCcL4?autoplay=1",
+    "https://www.youtube.com/embed/e5IUYHm78ts?autoplay=1",
+    "https://www.youtube.com/embed/36v6XTKw1XI?autoplay=1"
+];
 
-let propagandasVideos = [];
-let desenhosVideos = [];
-let filmesVideos = [];
+const transitionVideoUrl = "C:\\Users\\morad\\OneDrive\\Documentos\\GitHub\\curso-JS\\trabalho\\TvStatic.mp4";
 
 let isPlaybackOn = false;
+let lastVideoIndex = -1;
 
-let playlistAtual = [];
-let indicePlaylist = 0;
-
-// ==========================
-// CARREGAMENTO DOS JSON
-// ==========================
-
-async function carregarJson(caminho) {
-
-    try {
-
-        const resposta = await fetch(caminho);
-
-        if (!resposta.ok) {
-            throw new Error(`Erro ao carregar ${caminho}`);
-        }
-
-        return await resposta.json();
-
-    } catch (erro) {
-
-        console.error(erro);
-
-        return {
-            videos: []
-        };
-    }
+function getRandomVideo(videosArray, lastIndex) {
+    let randomIndex;
+    do {
+        randomIndex = Math.floor(Math.random() * videosArray.length);
+    } while (randomIndex === lastIndex);
+    return { url: videosArray[randomIndex], index: randomIndex };
 }
 
-async function carregarBiblioteca() {
+function getNextRandomVideo() {
+    let videosArray = [];
 
-    const propagandas = await carregarJson(
-        ARQUIVOS_JSON.propagandas
-    );
-
-    const desenhos = await carregarJson(
-        ARQUIVOS_JSON.desenhos
-    );
-
-    const filmes = await carregarJson(
-        ARQUIVOS_JSON.filmes
-    );
-
-    propagandasVideos = propagandas.videos || [];
-    desenhosVideos = desenhos.videos || [];
-    filmesVideos = filmes.videos || [];
-
-    updatePlaybackButtonVisibility();
-}
-
-// ==========================
-// SHUFFLE
-// ==========================
-
-function embaralhar(array) {
-
-    const copia = [...array];
-
-    for (let i = copia.length - 1; i > 0; i--) {
-
-        const j = Math.floor(
-            Math.random() * (i + 1)
-        );
-
-        [copia[i], copia[j]] =
-        [copia[j], copia[i]];
+    if (document.getElementById('programasCheckbox').checked) {
+        videosArray = videosArray.concat(videos);
     }
 
-    return copia;
-}
-
-// ==========================
-// PLAYLIST
-// ==========================
-
-function gerarPlaylist() {
-
-    let videos = [];
-
-    if (
-        document.getElementById(
-            "programasCheckbox"
-        ).checked
-    ) {
-        videos.push(...propagandasVideos);
+    if (document.getElementById('desenhosCheckbox').checked) {
+        videosArray = videosArray.concat(desenhosVideos);
     }
 
-    if (
-        document.getElementById(
-            "desenhosCheckbox"
-        ).checked
-    ) {
-        videos.push(...desenhosVideos);
+    if (videosArray.length === 0) {
+        return { url: null, index: -1 };
     }
 
-    if (
-        document.getElementById(
-            "filmesCheckbox"
-        ).checked
-    ) {
-        videos.push(...filmesVideos);
-    }
-
-    playlistAtual = embaralhar(videos);
-
-    indicePlaylist = 0;
+    return getRandomVideo(videosArray, lastVideoIndex);
 }
 
-function obterProximoVideo() {
-
-    if (playlistAtual.length === 0) {
-        return null;
-    }
-
-    if (indicePlaylist >= playlistAtual.length) {
-
-        playlistAtual =
-            embaralhar(playlistAtual);
-
-        indicePlaylist = 0;
-    }
-
-    return playlistAtual[indicePlaylist++];
+function playTransitionVideo(callback) {
+    const videoFrame = document.getElementById('video-frame');
+    videoFrame.innerHTML = `
+        <iframe 
+            width="560" 
+            height="315" 
+            src="${transitionVideoUrl}" 
+            title="Transition video player" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen
+        ></iframe>`;
+    
+    // Assume que o vídeo de transição tem 5 segundos
+    setTimeout(callback, 5000);
 }
-
-// ==========================
-// PLAYER
-// ==========================
-
-function criarIframe(url) {
-
-    const iframe =
-        document.createElement("iframe");
-
-    iframe.width = "100%";
-    iframe.height = "100%";
-
-    iframe.src = `${url}${
-        url.includes("?") ? "&" : "?"
-    }autoplay=1&rel=0&modestbranding=1`;
-
-    iframe.title =
-        "YouTube video player";
-
-    iframe.frameBorder = "0";
-
-    iframe.allow =
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-
-    iframe.referrerPolicy =
-        "strict-origin-when-cross-origin";
-
-    iframe.allowFullscreen = true;
-
-    return iframe;
-}
-
-// ==========================
-// ESTÁTICA
-// ==========================
-
-function mostrarEstatica(callback) {
-
-    const videoFrame =
-        document.getElementById(
-            "video-frame"
-        );
-
-    const staticDiv =
-        document.createElement("div");
-
-    staticDiv.classList.add("static");
-
-    videoFrame.innerHTML = "";
-
-    videoFrame.appendChild(staticDiv);
-
-    setTimeout(() => {
-
-        callback();
-
-    }, 1000);
-}
-
-// ==========================
-// REPRODUÇÃO
-// ==========================
 
 function playNextVideo() {
+    const videoFrame = document.getElementById('video-frame');
+    const nextVideo = getNextRandomVideo();
 
-    const url =
-        obterProximoVideo();
-
-    if (!url) {
-
-        console.warn(
-            "Nenhum vídeo disponível."
-        );
-
-        return;
+    if (nextVideo.url) {
+        playTransitionVideo(() => {
+            videoFrame.innerHTML = `
+                <iframe 
+                    width="560" 
+                    height="315" 
+                    src="${nextVideo.url}" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    referrerpolicy="strict-origin-when-cross-origin" 
+                    allowfullscreen
+                ></iframe>`;
+        });
     }
 
-    mostrarEstatica(() => {
-
-        const videoFrame =
-            document.getElementById(
-                "video-frame"
-            );
-
-        videoFrame.innerHTML = "";
-
-        const iframe =
-            criarIframe(url);
-
-        videoFrame.appendChild(
-            iframe
-        );
-    });
-}
-
-// ==========================
-// TV
-// ==========================
-
-function ligarTV() {
-
-    gerarPlaylist();
-
-    playNextVideo();
-
-    document.getElementById(
-        "togglePlayback"
-    ).innerText =
-        "Desligar TV";
-
-    isPlaybackOn = true;
-}
-
-function desligarTV() {
-
-    const videoFrame =
-        document.getElementById(
-            "video-frame"
-        );
-
-    videoFrame.innerHTML = "";
-
-    document.getElementById(
-        "togglePlayback"
-    ).innerText =
-        "Ligar TV";
-
-    isPlaybackOn = false;
+    lastVideoIndex = nextVideo.index;
 }
 
 function togglePlayback() {
-
     if (isPlaybackOn) {
-        desligarTV();
+        const videoFrame = document.getElementById('video-frame');
+        videoFrame.innerHTML = '';
+        document.getElementById('togglePlayback').innerText = 'Ligar TV';
+        isPlaybackOn = false;
     } else {
-        ligarTV();
+        playNextVideo();
+        document.getElementById('togglePlayback').innerText = 'Desligar TV';
+        isPlaybackOn = true;
     }
 }
-
-// ==========================
-// BOTÕES
-// ==========================
 
 function updatePlaybackButtonVisibility() {
-
-    const botao =
-        document.getElementById(
-            "togglePlayback"
-        );
-
-    const habilitado =
-        document.getElementById(
-            "programasCheckbox"
-        ).checked ||
-        document.getElementById(
-            "desenhosCheckbox"
-        ).checked ||
-        document.getElementById(
-            "filmesCheckbox"
-        ).checked;
-
-    botao.disabled = !habilitado;
+    const nextVideoButton = document.getElementById('togglePlayback');
+    if (document.getElementById('programasCheckbox').checked || document.getElementById('desenhosCheckbox').checked) {
+        nextVideoButton.removeAttribute('disabled');
+    } else {
+        nextVideoButton.setAttribute('disabled', true);
+    }
 }
 
-// ==========================
-// EVENTOS
-// ==========================
-
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
-
-        await carregarBiblioteca();
-
-        document
-            .getElementById(
-                "programasCheckbox"
-            )
-            .addEventListener(
-                "change",
-                updatePlaybackButtonVisibility
-            );
-
-        document
-            .getElementById(
-                "desenhosCheckbox"
-            )
-            .addEventListener(
-                "change",
-                updatePlaybackButtonVisibility
-            );
-
-        document
-            .getElementById(
-                "filmesCheckbox"
-            )
-            .addEventListener(
-                "change",
-                updatePlaybackButtonVisibility
-            );
-
-        document
-            .getElementById(
-                "togglePlayback"
-            )
-            .addEventListener(
-                "click",
-                togglePlayback
-            );
-
-        document
-            .getElementById(
-                "nextVideo"
-            )
-            .addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        isPlaybackOn
-                    ) {
-
-                        playNextVideo();
-                    }
-                }
-            );
-    }
-);
+document.addEventListener('DOMContentLoaded', () => {
+    updatePlaybackButtonVisibility();
+    document.getElementById('programasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    document.getElementById('desenhosCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
+    document.getElementById('nextVideo').addEventListener('click', () => {
+        if (isPlaybackOn) {
+            playNextVideo();
+        }
+    });
+    document.querySelector('a[href="#programas"]').addEventListener('click', () => {
+        document.getElementById('programasCheckbox').checked = true;
+        updatePlaybackButtonVisibility();
+    });
+    document.querySelector('a[href="#desenhos"]').addEventListener('click', () => {
+        document.getElementById('desenhosCheckbox').checked = true;
+        updatePlaybackButtonVisibility();
+    });
+});
