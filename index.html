@@ -22,10 +22,29 @@
         .hidden {
             opacity: 0;
         }
+        #background{
+            position: absolute;
+
+            top:0;
+            left:0;
+
+            width:100%;
+            height:100%;
+
+            z-index:1;
+        }
+
+        #bg-img{
+            width:100%;
+            height:100%;
+            display:block;
+            object-fit:cover;
+        }
 
         /* Estilo para a imagem da TV */
         #video-frame-container {
-            position: relative;
+            position: absolute;
+            z-index:10;
             width: 650px; /* Tamanho fixo */
             height: 650px; /* Tamanho fixo */
         }
@@ -64,6 +83,9 @@
         <div id="video-frame-container">
             <img id="tv-image" src="oldtelevision.png" alt="TV Antiga">
             <div class="video-container" id="video-frame"></div>
+        </div>
+        <div id="backgroundimg">
+           <img id="bg-img" src="imagemfundo.png" alt="Imagem fundo 90"> 
         </div>
         <!-- Botões para iniciar e trocar os vídeos -->
         <button id="togglePlayback">Ligar TV</button>
