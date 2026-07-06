@@ -1,4 +1,4 @@
-body {
+﻿body {
     font-family: 'Arial', sans-serif;
     background-color: black;
     margin: 0;
@@ -76,11 +76,11 @@ button:hover {
     pointer-events: none;
 }
 
-/* Estilo para desativar a interação do mouse com o player de vídeo */
+/* Estilo para desativar a interaÃ§Ã£o do mouse com o player de vÃ­deo */
 #video-frame-container {
     position: relative;
     width: 100%;
-    max-width: 750px; /* Ajuste conforme necessário */
+    max-width: 750px; /* Ajuste conforme necessÃ¡rio */
 }
 
 #tv-image {
@@ -93,10 +93,10 @@ button:hover {
 
 #video-frame {
     position: absolute;
-    left: 0; /* Ajustado para 0 para posicionar o player de vídeo no canto esquerdo */
-    top: 8.9%; /* Ajuste conforme necessário */
-    width: 70%; /* Ajuste conforme necessário */
-    height: 66%; /* Ajuste conforme necessário */
+    left: 0; /* Ajustado para 0 para posicionar o player de vÃ­deo no canto esquerdo */
+    top: 8.9%; /* Ajuste conforme necessÃ¡rio */
+    width: 70%; /* Ajuste conforme necessÃ¡rio */
+    height: 66%; /* Ajuste conforme necessÃ¡rio */
     left: 15%;
 }
 
@@ -118,10 +118,10 @@ button:hover {
 
 /* Estilo para as checkboxes */
 .checkbox-container {
-    margin-right: 200px; /* Ajuste o espaçamento entre as checkboxes conforme necessário */
-    flex: 2; /* Ocupar todo o espaço disponível restante */
-    display: flex; /* Usar um layout flexível para os checkboxes */
-    flex-direction: column; /* Alinhar as caixas de seleção verticalmente */
+    margin-right: 200px; /* Ajuste o espaÃ§amento entre as checkboxes conforme necessÃ¡rio */
+    flex: 2; /* Ocupar todo o espaÃ§o disponÃ­vel restante */
+    display: flex; /* Usar um layout flexÃ­vel para os checkboxes */
+    flex-direction: column; /* Alinhar as caixas de seleÃ§Ã£o verticalmente */
     justify-content: flex-start; /* Alinhar os itens verticalmente no topo */
     align-items: stretch; /* Alinhar os itens horizontalmente */
     position: relative; /* Posicionar o container relativamente */
@@ -129,8 +129,8 @@ button:hover {
   }
   
   .checkbox-container input[type="checkbox"] {
-    margin-bottom: 10px; /* Ajuste o espaçamento entre as caixas de seleção */
-    top: 20px; /* Ajustar a posição vertical das caixas de seleção */
+    margin-bottom: 10px; /* Ajuste o espaÃ§amento entre as caixas de seleÃ§Ã£o */
+    top: 20px; /* Ajustar a posiÃ§Ã£o vertical das caixas de seleÃ§Ã£o */
   }
 .programasc{
     padding: 0;
@@ -148,7 +148,7 @@ button:hover {
     white-space: nowrap;
 }
 /* ==========================
-   EFEITO DE ESTÁTICA
+   EFEITO DE ESTÃTICA
 ========================== */
 
 .static {
@@ -216,24 +216,97 @@ button:hover {
 }
 
 /* ==========================
+   IMAGEM DE FUNDO
+========================== */
+
+#backgroundimg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+#bg-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+/* ==========================
    BOTÕES
 ========================== */
 
 .controls {
-
     display: flex;
-
     justify-content: center;
-
     gap: 10px;
-
     margin-top: 20px;
 }
 
 #togglePlayback,
-#nextVideo{
+#nextVideo {
+    position: absolute;
+    bottom: 40px;
+    z-index: 30;
+    margin: 0;
+}
 
-    position:relative;
+#togglePlayback {
+    left: calc(50% - 90px);
+}
 
-    z-index:1;
+#nextVideo {
+    left: calc(50% + 45px);
+}
+
+/* Ajuste final de camadas */
+main {
+    min-height: 100vh;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+#video-frame-container {
+    z-index: 10;
+}
+
+#programas {
+    z-index: 30;
+}
+
+#togglePlayback,
+#nextVideo {
+    z-index: 30;
+}
+
+/* Ajuste de tela sem rolagem e TV no topo */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+main {
+    height: 100vh;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+#video-frame-container {
+    position: absolute !important;
+    top: 50px !important;
+    left: 20px !important;
+    width: min(650px, calc(100vh - 90px)) !important;
+    height: min(650px, calc(100vh - 90px)) !important;
+}
+
+#tv-image {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+#programas {
+    top: 50px;
 }
