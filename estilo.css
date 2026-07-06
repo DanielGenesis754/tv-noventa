@@ -1,5 +1,16 @@
-﻿body {
-    font-family: 'Arial', sans-serif;
+﻿* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: Arial, sans-serif;
     background-color: black;
     margin: 0;
     padding: 0;
@@ -29,213 +40,173 @@ nav ul li a {
 }
 
 main {
-    padding: 20px;
-    max-width: 1200px;
-    margin: auto;
     position: relative;
+    width: 100%;
+    max-width: 1200px;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    margin: auto;
+    padding: 20px;
+    isolation: isolate;
+    overflow: hidden;
 }
 
 section {
     margin: 20px 0;
 }
 
-.video-container {
-    position: relative;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
-    height: 0;
+/* Fundo */
+#backgroundimg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: -1;
     overflow: hidden;
-    max-width: 100%;
+    pointer-events: none;
+}
+
+#bg-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+}
+
+/* Lista de programas */
+.programasc {
+    position: fixed;
+    top: 50px;
+    left: calc(50vw + 80px);
+    z-index: 30;
+    margin: 0;
+    padding: 8px 10px;
+    border: 0;
+    max-width: calc(100vw - 720px);
+    color: rgb(0, 255, 0);
+    background-color: #616060;
+    font-size: 1.15em;
+    font-weight: bolder;
+    line-height: 1.25;
+    text-shadow: 1px 1px black;
+    white-space: nowrap;
+}
+
+.checkbox-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    margin-right: 0;
+}
+
+.checkbox-container input[type="checkbox"] {
+    margin-bottom: 10px;
+}
+
+/* TV */
+#video-frame-container {
+    --tv-top: 50px;
+    --tv-left: max(20px, calc((100vw - 1200px) / 2 + 20px));
+    --bottom-controls-space: 110px;
+
+    position: fixed;
+    top: var(--tv-top);
+    left: var(--tv-left);
+    z-index: 10;
+    width: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
+    height: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
+}
+
+#tv-image {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#video-frame,
+.video-container {
+    position: absolute;
+    top: 14%;
+    left: 14%;
+    z-index: 1;
+    width: 72%;
+    height: 72%;
+    overflow: hidden;
     background: #000;
 }
 
-.video-container iframe {
+.video-container iframe,
+.video-container video,
+#video-frame iframe,
+#video-frame video {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-}
-
-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #333;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    border-radius: 15px 15px;
-}
-
-button:hover {
-    background-color: #555;
 }
 
 #video-frame video {
     pointer-events: none;
 }
 
-/* Estilo para desativar a interaÃ§Ã£o do mouse com o player de vÃ­deo */
-#video-frame-container {
-    position: relative;
-    width: 100%;
-    max-width: 750px; /* Ajuste conforme necessÃ¡rio */
-}
-
-#tv-image {
-    width: 100%;
-    height: auto;
-    display: flex;
-    position: relative;
-    z-index: 2;
-}
-
-#video-frame {
-    position: absolute;
-    left: 0; /* Ajustado para 0 para posicionar o player de vÃ­deo no canto esquerdo */
-    top: 8.9%; /* Ajuste conforme necessÃ¡rio */
-    width: 70%; /* Ajuste conforme necessÃ¡rio */
-    height: 66%; /* Ajuste conforme necessÃ¡rio */
-    left: 15%;
-}
-
-.video-container {
-    position: relative;
-    width: 150%;
-    height: 100%;
-    padding-bottom: 0%; /* 16:9 aspect ratio */
-    overflow: hidden;
-}
-
-.video-container video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-/* Estilo para as checkboxes */
-.checkbox-container {
-    margin-right: 200px; /* Ajuste o espaÃ§amento entre as checkboxes conforme necessÃ¡rio */
-    flex: 2; /* Ocupar todo o espaÃ§o disponÃ­vel restante */
-    display: flex; /* Usar um layout flexÃ­vel para os checkboxes */
-    flex-direction: column; /* Alinhar as caixas de seleÃ§Ã£o verticalmente */
-    justify-content: flex-start; /* Alinhar os itens verticalmente no topo */
-    align-items: stretch; /* Alinhar os itens horizontalmente */
-    position: relative; /* Posicionar o container relativamente */
-    z-index: 10; /* Atribuir um z-index maior */
-  }
-  
-  .checkbox-container input[type="checkbox"] {
-    margin-bottom: 10px; /* Ajuste o espaÃ§amento entre as caixas de seleÃ§Ã£o */
-    top: 20px; /* Ajustar a posiÃ§Ã£o vertical das caixas de seleÃ§Ã£o */
-  }
-.programasc{
-    padding: 0;
-    margin: 0;
-    margin-bottom: -150px;
-    margin-top: 50px;
-    margin-left: 680px;
-    font-size: 1.15em;
-    font-weight: bolder;
-    color: rgb(0, 255, 0);
-    background-color: #616060;
-    text-shadow: 1px 1px black;
-    position: absolute;
-    border: 0px;
-    white-space: nowrap;
-}
-/* ==========================
-   EFEITO DE ESTÃTICA
-========================== */
-
+/* Efeito de estatica */
 .static {
-    background: url('static.gif')
-        center center / cover no-repeat;
-
     position: relative;
-
     top: 8%;
-
     left: 0;
-
-    width: 100%;
-
-    height: 90%;
-
     z-index: 1;
-
+    width: 100%;
+    height: 90%;
+    background: url('static.gif') center center / cover no-repeat;
     opacity: 1;
-
-    transition: opacity .5s ease-out;
+    transition: opacity 0.5s ease-out;
 }
 
 .hidden {
     opacity: 0;
 }
 
-/* ==========================
-   TV
-========================== */
-
-#video-frame-container {
-
-    position: relative;
-
-    width: 650px;
-
-    height: 650px;
-}
-
-#tv-image {
-
-    position: relative;
-
-    z-index: 2;
-
-    width: 650px;
-
-    height: 650px;
-}
-
-.video-container {
-
-    position: absolute;
-
-    top: 14%;
-
-    left: 14%;
-
-    width: 72%;
-
-    height: 72%;
-
-    z-index: 1;
-}
-
-/* ==========================
-   IMAGEM DE FUNDO
-========================== */
-
-#backgroundimg {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-}
-
-#bg-img {
-    width: 100%;
-    height: 100%;
+/* Botoes */
+button {
     display: block;
-    object-fit: cover;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 15px;
+    color: #fff;
+    background-color: #333;
+    font-size: 16px;
+    cursor: pointer;
 }
 
-/* ==========================
-   BOTÕES
-========================== */
+button:hover {
+    background-color: #555;
+}
+
+#togglePlayback,
+#nextVideo {
+    position: fixed;
+    bottom: 40px;
+    z-index: 30;
+    margin: 0;
+}
+
+#togglePlayback {
+    left: calc(50vw - 90px);
+}
+
+#nextVideo {
+    left: calc(50vw + 45px);
+    min-width: 44px;
+}
 
 .controls {
     display: flex;
@@ -244,69 +215,98 @@ button:hover {
     margin-top: 20px;
 }
 
-#togglePlayback,
-#nextVideo {
-    position: absolute;
-    bottom: 40px;
-    z-index: 30;
-    margin: 0;
+@media (max-width: 980px) {
+    .programasc {
+        top: 16px;
+        right: 20px;
+        left: auto;
+        max-width: calc(100vw - 40px);
+        font-size: 1em;
+    }
+
+    #video-frame-container {
+        --tv-top: 122px;
+        --tv-left: 20px;
+        width: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
+        height: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
+    }
 }
 
-#togglePlayback {
-    left: calc(50% - 90px);
+@media (max-width: 560px) {
+    main {
+        padding: 12px;
+    }
+
+    .programasc {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        max-width: none;
+        padding: 6px;
+        font-size: clamp(0.7rem, 3vw, 0.9rem);
+        white-space: normal;
+    }
+
+    .checkbox-container {
+        min-width: 0;
+        align-items: center;
+        text-align: center;
+    }
+
+    .checkbox-container label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+        flex: 0 0 auto;
+        margin: 0;
+    }
+
+    #video-frame-container {
+        --tv-top: 92px;
+        --tv-left: 12px;
+        --bottom-controls-space: 96px;
+        width: min(calc(100vw - 24px), calc(100dvh - var(--tv-top) - var(--bottom-controls-space)));
+        height: min(calc(100vw - 24px), calc(100dvh - var(--tv-top) - var(--bottom-controls-space)));
+    }
+
+    #togglePlayback,
+    #nextVideo {
+        bottom: 20px;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    #togglePlayback {
+        left: 50%;
+        transform: translateX(calc(-100% - 8px));
+    }
+
+    #nextVideo {
+        left: 50%;
+        transform: translateX(8px);
+    }
 }
 
-#nextVideo {
-    left: calc(50% + 45px);
-}
+@media (max-height: 520px) {
+    .programasc {
+        top: 8px;
+    }
 
-/* Ajuste final de camadas */
-main {
-    min-height: 100vh;
-    isolation: isolate;
-    overflow: hidden;
-}
+    #video-frame-container {
+        --tv-top: 70px;
+        --bottom-controls-space: 76px;
+    }
 
-#video-frame-container {
-    z-index: 10;
-}
-
-#programas {
-    z-index: 30;
-}
-
-#togglePlayback,
-#nextVideo {
-    z-index: 30;
-}
-
-/* Ajuste de tela sem rolagem e TV no topo */
-html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-main {
-    height: 100vh;
-    min-height: 0;
-    box-sizing: border-box;
-}
-
-#video-frame-container {
-    position: absolute !important;
-    top: 50px !important;
-    left: 20px !important;
-    width: min(650px, calc(100vh - 90px)) !important;
-    height: min(650px, calc(100vh - 90px)) !important;
-}
-
-#tv-image {
-    width: 100% !important;
-    height: 100% !important;
-}
-
-#programas {
-    top: 50px;
+    #togglePlayback,
+    #nextVideo {
+        bottom: 12px;
+    }
 }
