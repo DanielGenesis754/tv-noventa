@@ -10,9 +10,13 @@ const videoLists = {
     filmes: []
 };
 
+const unavailableVideos = new Set();
+
 let isPlaybackOn = false;
 let lastVideoUrl = null;
 let videosLoaded = false;
+let youtubeApiPromise = null;
+let currentPlayer = null;
 
 async function loadVideoList(source) {
     const response = await fetch(source, { cache: 'no-store' });
@@ -43,6 +47,73 @@ async function loadAllVideoLists() {
     });
 
     videosLoaded = true;
+}
+
+function loadYouTubeApi() {
+    if (window.YT && window.YT.Player) {
+        return Promise.resolve(window.YT);
+    }
+
+    if (youtubeApiPromise) {
+        return youtubeApiPromise;
+    }
+
+    youtubeApiPromise = new Promise((resolve) => {
+        const previousReadyCallback = window.onYouTubeIframeAPIReady;
+
+        window.onYouTubeIframeAPIReady = () => {
+            if (typeof previousReadyCallback === 'function') {
+                previousReadyCallback();
+            }
+
+            resolve(window.YT);
+        };
+
+        const script = document.createElement('script');
+        script.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(script);
+    });
+
+    return youtubeApiPromise;
+}
+
+function parseYouTubeEmbedUrl(videoUrl) {
+    const url = new URL(videoUrl, window.location.href);
+    const embedMatch = url.pathname.match(/\/embed\/([^/?]+)/);
+    const videoId = embedMatch ? embedMatch[1] : url.searchParams.get('v');
+
+    if (!videoId) {
+        throw new Error(`Nao consegui identificar o videoId em ${videoUrl}`);
+    }
+
+    const playerVars = {
+        autoplay: 1,
+        rel: 0,
+        playsinline: 1
+    };
+
+    if (url.searchParams.has('start')) {
+        playerVars.start = url.searchParams.get('start');
+    }
+
+    if (url.searchParams.has('loop')) {
+        playerVars.loop = url.searchParams.get('loop');
+        playerVars.playlist = url.searchParams.get('playlist') || videoId;
+    }
+
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        playerVars.origin = window.location.origin;
+    }
+
+    return { videoId, playerVars };
+}
+
+function destroyCurrentPlayer() {
+    if (currentPlayer && typeof currentPlayer.destroy === 'function') {
+        currentPlayer.destroy();
+    }
+
+    currentPlayer = null;
 }
 
 function getRandomVideo(videosArray) {
@@ -77,43 +148,129 @@ function getSelectedVideos() {
     return selectedVideos;
 }
 
+function getAvailableSelectedVideos() {
+    const selectedVideos = getSelectedVideos();
+    const availableVideos = selectedVideos.filter((videoUrl) => !unavailableVideos.has(videoUrl));
+
+    return availableVideos.length > 0 ? availableVideos : selectedVideos;
+}
+
+async function createYouTubePlayer(videoUrl) {
+    await loadYouTubeApi();
+
+    const videoFrame = document.getElementById('video-frame');
+    const playerHost = document.createElement('div');
+    const { videoId, playerVars } = parseYouTubeEmbedUrl(videoUrl);
+
+    playerHost.id = 'youtube-player-host';
+    videoFrame.appendChild(playerHost);
+
+    currentPlayer = new YT.Player(playerHost, {
+        width: '100%',
+        height: '100%',
+        videoId,
+        playerVars,
+        events: {
+            onReady: (event) => {
+                event.target.playVideo();
+            },
+            onError: (event) => {
+                skipUnavailableVideo(videoUrl, event.data);
+            }
+        }
+    });
+}
+
+function skipUnavailableVideo(videoUrl, errorCode) {
+    unavailableVideos.add(videoUrl);
+    console.warn(`Video indisponivel, pulando para outro. Codigo YouTube: ${errorCode}`, videoUrl);
+
+    if (isPlaybackOn) {
+        playNextVideo();
+    }
+}
+
+function showStaticTransition(videoFrame) {
+    const staticDiv = document.createElement('div');
+    const staticVideo = document.createElement('video');
+
+    staticDiv.classList.add('static');
+    staticVideo.classList.add('static-video');
+    staticVideo.src = 'TvStatic.mp4';
+    staticVideo.autoplay = true;
+    staticVideo.playsInline = true;
+    staticVideo.loop = true;
+    staticVideo.preload = 'auto';
+    staticVideo.volume = 0.8;
+
+    staticVideo.addEventListener('canplay', () => {
+        staticDiv.classList.add('static-video-loaded');
+    }, { once: true });
+
+    staticVideo.addEventListener('error', () => {
+        staticVideo.remove();
+    }, { once: true });
+
+    staticDiv.appendChild(staticVideo);
+    videoFrame.appendChild(staticDiv);
+
+    const playPromise = staticVideo.play();
+
+    if (playPromise) {
+        playPromise.catch(() => {
+            staticVideo.muted = true;
+            staticVideo.play().catch(() => {
+                staticVideo.remove();
+            });
+        });
+    }
+
+    return staticDiv;
+}
+
+function hideStaticTransition(staticDiv) {
+    const staticVideo = staticDiv.querySelector('video');
+
+    if (staticVideo) {
+        staticVideo.pause();
+    }
+
+    staticDiv.classList.add('hidden');
+
+    setTimeout(() => {
+        if (staticDiv.parentElement) {
+            staticDiv.remove();
+        }
+    }, 500);
+}
+
 function playNextVideo() {
     if (!videosLoaded) {
         return;
     }
 
     const videoFrame = document.getElementById('video-frame');
-    const nextVideoUrl = getRandomVideo(getSelectedVideos());
+    const nextVideoUrl = getRandomVideo(getAvailableSelectedVideos());
 
     if (!nextVideoUrl) {
         return;
     }
 
-    const staticDiv = document.createElement('div');
-    staticDiv.classList.add('static');
-    videoFrame.appendChild(staticDiv);
+    destroyCurrentPlayer();
+    videoFrame.innerHTML = '';
 
-    setTimeout(() => {
-        videoFrame.innerHTML = '';
+    const staticDiv = showStaticTransition(videoFrame);
 
-        const iframe = document.createElement('iframe');
-        iframe.width = '100%';
-        iframe.height = '100%';
-        iframe.src = nextVideoUrl;
-        iframe.title = 'YouTube video player';
-        iframe.frameBorder = '0';
-        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-        iframe.allowFullscreen = true;
-
-        videoFrame.appendChild(iframe);
-
-        staticDiv.classList.add('hidden');
-        setTimeout(() => {
-            if (staticDiv.parentElement) {
-                staticDiv.remove();
-            }
-        }, 500);
+    setTimeout(async () => {
+        try {
+            videoFrame.innerHTML = '';
+            await createYouTubePlayer(nextVideoUrl);
+            videoFrame.appendChild(staticDiv);
+            hideStaticTransition(staticDiv);
+        } catch (error) {
+            console.error(error);
+            skipUnavailableVideo(nextVideoUrl, 'erro-local');
+        }
     }, 1000);
 
     lastVideoUrl = nextVideoUrl;
@@ -124,6 +281,7 @@ function togglePlayback() {
     const videoFrame = document.getElementById('video-frame');
 
     if (isPlaybackOn) {
+        destroyCurrentPlayer();
         videoFrame.innerHTML = '';
         togglePlaybackButton.innerText = 'Ligar TV';
         isPlaybackOn = false;
@@ -151,7 +309,7 @@ function showVideoLoadError(error) {
     console.error(error);
     console.info('Se voce abriu o index.html direto como arquivo, rode um servidor local. Exemplo: python -m http.server 8000');
 
-    document.getElementById('togglePlayback').innerText = 'Erro nos links';
+    document.getElementById('togglePlayback').innerText = 'Ligar TV';
     updatePlaybackButtonVisibility();
 }
 
@@ -176,3 +334,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         showVideoLoadError(error);
     }
 });
+
