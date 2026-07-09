@@ -259,11 +259,11 @@ button:hover {
         right: 12px;
         left: 12px;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 6px;
         max-width: none;
         padding: 6px;
-        font-size: clamp(0.7rem, 3vw, 0.9rem);
+        font-size: clamp(0.62rem, 2.6vw, 0.86rem);
         white-space: normal;
     }
 
@@ -327,5 +327,6 @@ button:hover {
         bottom: 12px;
     }
 }
+
 
 

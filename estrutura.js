@@ -1,13 +1,15 @@
 ﻿const videoSources = {
     programas: 'linksPropagandas.json',
     desenhos: 'linksDesenhos.json',
-    filmes: 'linksFilmes.json'
+    filmes: 'linksFilmes.json',
+    intervalosGlobo: 'linksIntervalosGlobo.json'
 };
 
 const videoLists = {
     programas: [],
     desenhos: [],
-    filmes: []
+    filmes: [],
+    intervalosGlobo: []
 };
 
 const unavailableVideos = new Set();
@@ -143,6 +145,10 @@ function getSelectedVideos() {
 
     if (document.getElementById('filmesCheckbox').checked) {
         selectedVideos = selectedVideos.concat(videoLists.filmes);
+    }
+
+    if (document.getElementById('intervalosGloboCheckbox').checked) {
+        selectedVideos = selectedVideos.concat(videoLists.intervalosGlobo);
     }
 
     return selectedVideos;
@@ -298,7 +304,8 @@ function updatePlaybackButtonVisibility() {
     const nextVideoButton = document.getElementById('nextVideo');
     const hasSelectedCategory = document.getElementById('programasCheckbox').checked
         || document.getElementById('desenhosCheckbox').checked
-        || document.getElementById('filmesCheckbox').checked;
+        || document.getElementById('filmesCheckbox').checked
+        || document.getElementById('intervalosGloboCheckbox').checked;
     const shouldEnableButtons = videosLoaded && hasSelectedCategory;
 
     togglePlaybackButton.disabled = !shouldEnableButtons;
@@ -320,6 +327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('programasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('desenhosCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('filmesCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    document.getElementById('intervalosGloboCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
     document.getElementById('nextVideo').addEventListener('click', () => {
         if (isPlaybackOn) {
@@ -334,4 +342,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showVideoLoadError(error);
     }
 });
+
+
 
