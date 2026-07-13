@@ -2,14 +2,16 @@
     programas: 'linksPropagandas.json',
     desenhos: 'linksDesenhos.json',
     filmes: 'linksFilmes.json',
-    intervalosGlobo: 'linksIntervalosGlobo.json'
+    intervalosGlobo: 'linksIntervalosGlobo.json',
+    jornais: 'linksJornais.json'
 };
 
 const videoLists = {
     programas: [],
     desenhos: [],
     filmes: [],
-    intervalosGlobo: []
+    intervalosGlobo: [],
+    jornais: []
 };
 
 const unavailableVideos = new Set();
@@ -92,6 +94,12 @@ function parseYouTubeEmbedUrl(videoUrl) {
 
     const playerVars = {
         autoplay: 1,
+        controls: 0,
+        cc_load_policy: 0,
+        disablekb: 1,
+        fs: 0,
+        iv_load_policy: 3,
+        modestbranding: 1,
         rel: 0,
         playsinline: 1
     };
@@ -99,13 +107,7 @@ function parseYouTubeEmbedUrl(videoUrl) {
     if (url.searchParams.has('start')) {
         playerVars.start = url.searchParams.get('start');
     }
-
-    if (url.searchParams.has('loop')) {
-        playerVars.loop = url.searchParams.get('loop');
-        playerVars.playlist = url.searchParams.get('playlist') || videoId;
-    }
-
-    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
         playerVars.origin = window.location.origin;
     }
 
@@ -153,6 +155,10 @@ function getSelectedVideos() {
         selectedVideos = selectedVideos.concat(videoLists.intervalosGlobo);
     }
 
+    if (document.getElementById('jornaisCheckbox').checked) {
+        selectedVideos = selectedVideos.concat(videoLists.jornais);
+    }
+
     return selectedVideos;
 }
 
@@ -161,6 +167,23 @@ function getAvailableSelectedVideos() {
     const availableVideos = selectedVideos.filter((videoUrl) => !unavailableVideos.has(videoUrl));
 
     return availableVideos.length > 0 ? availableVideos : selectedVideos;
+}
+
+function disableYouTubeCaptions(player) {
+    try {
+        if (typeof player.unloadModule === 'function') {
+            player.unloadModule('captions');
+            player.unloadModule('cc');
+        }
+
+        if (typeof player.setOption === 'function') {
+            player.setOption('captions', 'track', {});
+            player.setOption('cc', 'track', {});
+            player.setOption('captions', 'fontSize', 0);
+        }
+    } catch (error) {
+        console.warn('Nao foi possivel desligar legendas automaticamente.', error);
+    }
 }
 
 async function createYouTubePlayer(videoUrl) {
@@ -180,8 +203,21 @@ async function createYouTubePlayer(videoUrl) {
         playerVars,
         events: {
             onReady: (event) => {
+                if (siteVolume > 0 && typeof event.target.unMute === 'function') {
+                    event.target.unMute();
+                }
+
+                disableYouTubeCaptions(event.target);
                 event.target.setVolume(siteVolume);
                 event.target.playVideo();
+
+                setTimeout(() => disableYouTubeCaptions(event.target), 800);
+                setTimeout(() => disableYouTubeCaptions(event.target), 2000);
+            },
+            onStateChange: (event) => {
+                if (window.YT && event.data === YT.PlayerState.PLAYING) {
+                    disableYouTubeCaptions(event.target);
+                }
             },
             onError: (event) => {
                 skipUnavailableVideo(videoUrl, event.data);
@@ -270,17 +306,16 @@ function playNextVideo() {
 
     const staticDiv = showStaticTransition(videoFrame);
 
-    setTimeout(async () => {
-        try {
-            videoFrame.innerHTML = '';
-            await createYouTubePlayer(nextVideoUrl);
-            videoFrame.appendChild(staticDiv);
-            hideStaticTransition(staticDiv);
-        } catch (error) {
+    createYouTubePlayer(nextVideoUrl)
+        .then(() => {
+            setTimeout(() => {
+                hideStaticTransition(staticDiv);
+            }, 1000);
+        })
+        .catch((error) => {
             console.error(error);
             skipUnavailableVideo(nextVideoUrl, 'erro-local');
-        }
-    }, 1000);
+        });
 
     lastVideoUrl = nextVideoUrl;
 }
@@ -308,7 +343,8 @@ function updatePlaybackButtonVisibility() {
     const hasSelectedCategory = document.getElementById('programasCheckbox').checked
         || document.getElementById('desenhosCheckbox').checked
         || document.getElementById('filmesCheckbox').checked
-        || document.getElementById('intervalosGloboCheckbox').checked;
+        || document.getElementById('intervalosGloboCheckbox').checked
+        || document.getElementById('jornaisCheckbox').checked;
     const shouldEnableButtons = videosLoaded && hasSelectedCategory;
 
     togglePlaybackButton.disabled = !shouldEnableButtons;
@@ -320,7 +356,10 @@ function applySiteVolume() {
 
     if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
         try {
-            currentPlayer.unMute();
+            if (typeof currentPlayer.unMute === 'function' && siteVolume > 0) {
+                currentPlayer.unMute();
+            }
+
             currentPlayer.setVolume(siteVolume);
         } catch (error) {
             console.warn('Nao foi possivel aplicar volume ao player ainda.', error);
@@ -329,55 +368,13 @@ function applySiteVolume() {
 
     if (staticVideo) {
         staticVideo.volume = siteVolume / 100;
+        staticVideo.muted = siteVolume === 0;
     }
-}
-
-function renderVolumeBars() {
-    const barsContainer = document.getElementById('volume-bars');
-    const activeBars = Math.round(siteVolume / 10);
-
-    if (!barsContainer) {
-        return;
-    }
-
-    barsContainer.innerHTML = '';
-
-    for (let index = 1; index <= 10; index += 1) {
-        const bar = document.createElement('div');
-        bar.classList.add('volume-bar');
-
-        if (index <= activeBars) {
-            bar.classList.add('active');
-        }
-
-        barsContainer.appendChild(bar);
-    }
-}
-
-function showVolumeDisplay() {
-    const volumeDisplay = document.getElementById('volume-display');
-    const volumeValue = document.getElementById('volume-value');
-
-    if (!volumeDisplay || !volumeValue) {
-        return;
-    }
-
-    volumeValue.innerText = siteVolume;
-    renderVolumeBars();
-    volumeDisplay.classList.add('visible');
-    volumeDisplay.style.opacity = '1';
-
-    clearTimeout(volumeDisplayTimeout);
-    volumeDisplayTimeout = setTimeout(() => {
-        volumeDisplay.classList.remove('visible');
-        volumeDisplay.style.opacity = '';
-    }, 1800);
 }
 
 function setSiteVolume(nextVolume) {
     siteVolume = Math.max(0, Math.min(100, nextVolume));
     applySiteVolume();
-    showVolumeDisplay();
 }
 
 function changeSiteVolume(delta) {
@@ -396,14 +393,15 @@ function handleVolumeShortcut(event) {
 
     if (event.key === 'ArrowUp' || event.key === '+') {
         event.preventDefault();
-        setSiteVolume(siteVolume + 10);
+        changeSiteVolume(10);
     }
 
     if (event.key === 'ArrowDown' || event.key === '-') {
         event.preventDefault();
-        setSiteVolume(siteVolume - 10);
+        changeSiteVolume(-10);
     }
 }
+
 function showVideoLoadError(error) {
     console.error(error);
     console.info('Se voce abriu o index.html direto como arquivo, rode um servidor local. Exemplo: python -m http.server 8000');
@@ -420,10 +418,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('desenhosCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('filmesCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('intervalosGloboCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    document.getElementById('jornaisCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
     document.addEventListener('keydown', handleVolumeShortcut);
-    document.getElementById('volume-value').innerText = siteVolume;
-    renderVolumeBars();
+    document.getElementById('volumeDown').addEventListener('click', () => changeSiteVolume(-10));
+    document.getElementById('volumeUp').addEventListener('click', () => changeSiteVolume(10));
 
     document.getElementById('nextVideo').addEventListener('click', () => {
         if (isPlaybackOn) {
@@ -433,11 +432,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         await loadAllVideoLists();
+        loadYouTubeApi();
         updatePlaybackButtonVisibility();
     } catch (error) {
         showVideoLoadError(error);
     }
 });
+
+
+
+
+
+
+
+
+
+
 
 
 

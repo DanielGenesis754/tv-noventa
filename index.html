@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV Antiga</title>
-    <link rel="stylesheet" href="estilo.css?v=volume-fix-3">
+    <link rel="stylesheet" href="estilo.css?v=controls-right-fixed-1">
 </head>
 <body>
     <main>
@@ -21,6 +21,9 @@
             <div class="checkbox-container">
                 <label><input type="checkbox" id="intervalosGloboCheckbox" checked> Intervalos Globo</label>
             </div>
+            <div class="checkbox-container">
+                <label><input type="checkbox" id="jornaisCheckbox" checked> Jornais</label>
+            </div>
         </section>
         <!-- Frame de vÃ­deo dentro da imagem da TV -->
         <div id="video-frame-container">
@@ -35,15 +38,22 @@
         <button id="nextVideo">></button>
         <button id="volumeDown" class="volume-control" type="button" aria-label="Diminuir volume" onclick="window.changeSiteVolume(-10)">-</button>
         <button id="volumeUp" class="volume-control" type="button" aria-label="Aumentar volume" onclick="window.changeSiteVolume(10)">+</button>
-        <div id="volume-display" aria-live="polite">
-            <span id="volume-label">VOLUME</span>
-            <div id="volume-bars"></div>
-            <span id="volume-value">80</span>
-        </div>
+        
     </main>
-    <script src="estrutura.js?v=volume-fix-3"></script>
+    <script src="estrutura.js?v=controls-right-fixed-1"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

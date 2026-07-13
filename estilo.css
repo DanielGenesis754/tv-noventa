@@ -113,15 +113,20 @@ section {
 #video-frame-container {
     --tv-top: 50px;
     --tv-left: max(20px, calc((100vw - 1200px) / 2 + 20px));
-    --bottom-controls-space: 110px;
 
     position: fixed;
     top: var(--tv-top);
     left: var(--tv-left);
     z-index: 10;
-    width: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
-    height: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
+    width: 680px;
+    height: 680px;
+    min-width: 680px;
+    min-height: 680px;
+    max-width: 680px;
+    max-height: 680px;
 }
+
+
 
 #tv-image {
     position: relative;
@@ -148,11 +153,11 @@ section {
 #video-frame iframe,
 #video-frame video {
     position: absolute;
-    top: 0;
+    top: 53%;
     left: 50%;
-    width: 137%;
-    height: 100%;
-    transform: translateX(-50%);
+    width: 164%;
+    height: 145%;
+    transform: translate(-50%, -50%);
 }
 
 #video-frame video {
@@ -294,22 +299,9 @@ button:hover {
         font-size: 1em;
     }
 
-    #video-frame-container {
-        --tv-top: 122px;
-        --tv-left: 20px;
-        width: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
-        height: min(650px, calc(100dvh - var(--tv-top) - var(--bottom-controls-space)), calc(100vw - 40px));
-    }
 }
 
 @media (max-width: 560px) {
-    #volume-display {
-        bottom: 76px;
-        min-width: min(260px, calc(100vw - 24px));
-        padding: 8px 10px;
-        font-size: 14px;
-    }
-
     main {
         padding: 12px;
     }
@@ -319,11 +311,11 @@ button:hover {
         right: 12px;
         left: 12px;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 6px;
         max-width: none;
         padding: 6px;
-        font-size: clamp(0.62rem, 2.6vw, 0.86rem);
+        font-size: clamp(0.58rem, 2.35vw, 0.82rem);
         white-space: normal;
     }
 
@@ -346,13 +338,6 @@ button:hover {
         margin: 0;
     }
 
-    #video-frame-container {
-        --tv-top: 92px;
-        --tv-left: 12px;
-        --bottom-controls-space: 96px;
-        width: min(calc(100vw - 24px), calc(100dvh - var(--tv-top) - var(--bottom-controls-space)));
-        height: min(calc(100vw - 24px), calc(100dvh - var(--tv-top) - var(--bottom-controls-space)));
-    }
 
     #togglePlayback,
     #nextVideo {
@@ -377,22 +362,12 @@ button:hover {
         top: 8px;
     }
 
-    #video-frame-container {
-        --tv-top: 70px;
-        --bottom-controls-space: 76px;
-    }
 
     #togglePlayback,
     #nextVideo {
         bottom: 12px;
     }
 }
-
-
-
-
-
-
 /* Controles visiveis de volume */
 #volumeDown,
 #volumeUp {
@@ -448,3 +423,93 @@ button:hover {
     }
 }
 
+
+/* Volume OSD desativado: volume agora e controlado somente pelos botoes + e - */
+#volume-display {
+    display: none !important;
+}
+
+
+
+
+/* TV sempre fixa em 680px */
+#video-frame-container {
+    width: 680px !important;
+    height: 680px !important;
+    min-width: 680px !important;
+    min-height: 680px !important;
+    max-width: 680px !important;
+    max-height: 680px !important;
+}
+
+
+/* Programas sempre fixo */
+#programas.programasc {
+    position: fixed !important;
+    top: 50px !important;
+    right: auto !important;
+    left: max(720px, calc((100vw - 1200px) / 2 + 720px)) !important;
+    display: block !important;
+    width: 270px !important;
+    min-width: 270px !important;
+    max-width: 270px !important;
+    height: auto !important;
+    padding: 8px 10px !important;
+    font-size: 1.05em !important;
+    white-space: nowrap !important;
+}
+
+#programas .checkbox-container {
+    display: block !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    text-align: left !important;
+}
+
+#programas .checkbox-container label {
+    display: block !important;
+}
+
+
+
+/* Controles fixos ao lado da TV */
+#togglePlayback,
+#nextVideo,
+#volumeDown,
+#volumeUp {
+    position: fixed !important;
+    z-index: 1000 !important;
+    left: max(720px, calc((100vw - 1200px) / 2 + 720px)) !important;
+    right: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
+#togglePlayback {
+    top: 360px !important;
+    bottom: auto !important;
+    width: 150px !important;
+}
+
+#nextVideo {
+    top: 410px !important;
+    bottom: auto !important;
+    width: 52px !important;
+    min-width: 52px !important;
+}
+
+#volumeDown,
+#volumeUp {
+    top: 462px !important;
+    bottom: auto !important;
+    width: 42px !important;
+    height: 42px !important;
+}
+
+#volumeDown {
+    left: max(720px, calc((100vw - 1200px) / 2 + 720px)) !important;
+}
+
+#volumeUp {
+    left: max(770px, calc((100vw - 1200px) / 2 + 770px)) !important;
+}
