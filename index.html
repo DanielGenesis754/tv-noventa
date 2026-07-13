@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV Antiga</title>
-    <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="estilo.css?v=volume-fix-3">
 </head>
 <body>
     <main>
@@ -33,10 +33,21 @@
         <!-- BotÃµes para iniciar e trocar os vÃ­deos -->
         <button id="togglePlayback">Ligar TV</button>
         <button id="nextVideo">></button>
+        <button id="volumeDown" class="volume-control" type="button" aria-label="Diminuir volume" onclick="window.changeSiteVolume(-10)">-</button>
+        <button id="volumeUp" class="volume-control" type="button" aria-label="Aumentar volume" onclick="window.changeSiteVolume(10)">+</button>
+        <div id="volume-display" aria-live="polite">
+            <span id="volume-label">VOLUME</span>
+            <div id="volume-bars"></div>
+            <span id="volume-value">80</span>
+        </div>
     </main>
-    <script src="estrutura.js"></script>
+    <script src="estrutura.js?v=volume-fix-3"></script>
 </body>
 </html>
+
+
+
+
 
 
 

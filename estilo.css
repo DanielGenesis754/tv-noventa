@@ -192,6 +192,59 @@ section {
     opacity: 0;
 }
 
+
+/* Volume OSD */
+#volume-display {
+    position: fixed;
+    left: 50%;
+    bottom: 112px;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 260px;
+    padding: 10px 14px;
+    border: 2px solid rgba(0, 255, 0, 0.8);
+    color: #00ff00;
+    background: rgba(0, 0, 0, 0.78);
+    font-family: "Courier New", monospace;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 0;
+    text-shadow: 1px 1px #000;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition: opacity 0.18s ease-out;
+}
+
+#volume-display.visible {
+    opacity: 1;
+}
+
+#volume-bars {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 3px;
+    flex: 1;
+    height: 18px;
+}
+
+.volume-bar {
+    width: 100%;
+    height: 100%;
+    background: #00ff00;
+    opacity: 0.22;
+}
+
+.volume-bar.active {
+    opacity: 1;
+}
+
+#volume-value {
+    min-width: 3ch;
+    text-align: right;
+}
 /* Botoes */
 button {
     display: block;
@@ -250,6 +303,13 @@ button:hover {
 }
 
 @media (max-width: 560px) {
+    #volume-display {
+        bottom: 76px;
+        min-width: min(260px, calc(100vw - 24px));
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+
     main {
         padding: 12px;
     }
@@ -329,4 +389,62 @@ button:hover {
 }
 
 
+
+
+
+
+/* Controles visiveis de volume */
+#volumeDown,
+#volumeUp {
+    position: fixed;
+    bottom: 40px;
+    z-index: 1000;
+    width: 42px;
+    height: 42px;
+    margin: 0;
+    padding: 0;
+    border: 2px solid rgba(0, 255, 0, 0.65);
+    color: #00ff00;
+    background: rgba(0, 0, 0, 0.78);
+    font-family: "Courier New", monospace;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: 1px 1px #000;
+}
+
+#volumeDown {
+    left: calc(50vw + 100px);
+}
+
+#volumeUp {
+    left: calc(50vw + 148px);
+}
+
+@media (max-width: 560px) {
+    #volumeDown,
+    #volumeUp {
+        bottom: 20px;
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    #volumeDown {
+        right: 58px;
+        left: auto;
+    }
+
+    #volumeUp {
+        right: 12px;
+        left: auto;
+    }
+}
+
+@media (max-height: 520px) {
+    #volumeDown,
+    #volumeUp {
+        bottom: 12px;
+    }
+}
 

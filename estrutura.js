@@ -19,6 +19,8 @@ let lastVideoUrl = null;
 let videosLoaded = false;
 let youtubeApiPromise = null;
 let currentPlayer = null;
+let siteVolume = 80;
+let volumeDisplayTimeout = null;
 
 async function loadVideoList(source) {
     const response = await fetch(source, { cache: 'no-store' });
@@ -178,6 +180,7 @@ async function createYouTubePlayer(videoUrl) {
         playerVars,
         events: {
             onReady: (event) => {
+                event.target.setVolume(siteVolume);
                 event.target.playVideo();
             },
             onError: (event) => {
@@ -207,7 +210,7 @@ function showStaticTransition(videoFrame) {
     staticVideo.playsInline = true;
     staticVideo.loop = true;
     staticVideo.preload = 'auto';
-    staticVideo.volume = 0.8;
+    staticVideo.volume = siteVolume / 100;
 
     staticVideo.addEventListener('canplay', () => {
         staticDiv.classList.add('static-video-loaded');
@@ -312,6 +315,95 @@ function updatePlaybackButtonVisibility() {
     nextVideoButton.disabled = !shouldEnableButtons;
 }
 
+function applySiteVolume() {
+    const staticVideo = document.querySelector('.static-video');
+
+    if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
+        try {
+            currentPlayer.unMute();
+            currentPlayer.setVolume(siteVolume);
+        } catch (error) {
+            console.warn('Nao foi possivel aplicar volume ao player ainda.', error);
+        }
+    }
+
+    if (staticVideo) {
+        staticVideo.volume = siteVolume / 100;
+    }
+}
+
+function renderVolumeBars() {
+    const barsContainer = document.getElementById('volume-bars');
+    const activeBars = Math.round(siteVolume / 10);
+
+    if (!barsContainer) {
+        return;
+    }
+
+    barsContainer.innerHTML = '';
+
+    for (let index = 1; index <= 10; index += 1) {
+        const bar = document.createElement('div');
+        bar.classList.add('volume-bar');
+
+        if (index <= activeBars) {
+            bar.classList.add('active');
+        }
+
+        barsContainer.appendChild(bar);
+    }
+}
+
+function showVolumeDisplay() {
+    const volumeDisplay = document.getElementById('volume-display');
+    const volumeValue = document.getElementById('volume-value');
+
+    if (!volumeDisplay || !volumeValue) {
+        return;
+    }
+
+    volumeValue.innerText = siteVolume;
+    renderVolumeBars();
+    volumeDisplay.classList.add('visible');
+    volumeDisplay.style.opacity = '1';
+
+    clearTimeout(volumeDisplayTimeout);
+    volumeDisplayTimeout = setTimeout(() => {
+        volumeDisplay.classList.remove('visible');
+        volumeDisplay.style.opacity = '';
+    }, 1800);
+}
+
+function setSiteVolume(nextVolume) {
+    siteVolume = Math.max(0, Math.min(100, nextVolume));
+    applySiteVolume();
+    showVolumeDisplay();
+}
+
+function changeSiteVolume(delta) {
+    setSiteVolume(siteVolume + delta);
+}
+
+window.setSiteVolume = setSiteVolume;
+window.changeSiteVolume = changeSiteVolume;
+
+function handleVolumeShortcut(event) {
+    const ignoredTags = ['INPUT', 'TEXTAREA', 'SELECT'];
+
+    if (ignoredTags.includes(event.target.tagName)) {
+        return;
+    }
+
+    if (event.key === 'ArrowUp' || event.key === '+') {
+        event.preventDefault();
+        setSiteVolume(siteVolume + 10);
+    }
+
+    if (event.key === 'ArrowDown' || event.key === '-') {
+        event.preventDefault();
+        setSiteVolume(siteVolume - 10);
+    }
+}
 function showVideoLoadError(error) {
     console.error(error);
     console.info('Se voce abriu o index.html direto como arquivo, rode um servidor local. Exemplo: python -m http.server 8000');
@@ -329,6 +421,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('filmesCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('intervalosGloboCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
+    document.addEventListener('keydown', handleVolumeShortcut);
+    document.getElementById('volume-value').innerText = siteVolume;
+    renderVolumeBars();
+
     document.getElementById('nextVideo').addEventListener('click', () => {
         if (isPlaybackOn) {
             playNextVideo();
@@ -342,6 +438,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         showVideoLoadError(error);
     }
 });
+
+
+
+
+
+
+
+
 
 
 
