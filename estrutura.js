@@ -345,10 +345,20 @@ function updatePlaybackButtonVisibility() {
         || document.getElementById('filmesCheckbox').checked
         || document.getElementById('intervalosGloboCheckbox').checked
         || document.getElementById('jornaisCheckbox').checked;
-    const shouldEnableButtons = videosLoaded && hasSelectedCategory;
+    const shouldEnableToggleButton = videosLoaded && (hasSelectedCategory || isPlaybackOn);
+    const shouldEnableNextButton = videosLoaded && hasSelectedCategory;
 
-    togglePlaybackButton.disabled = !shouldEnableButtons;
-    nextVideoButton.disabled = !shouldEnableButtons;
+    togglePlaybackButton.disabled = !shouldEnableToggleButton;
+    nextVideoButton.disabled = !shouldEnableNextButton;
+}
+
+function clearProgramSelections() {
+    document.getElementById('programasCheckbox').checked = false;
+    document.getElementById('desenhosCheckbox').checked = false;
+    document.getElementById('filmesCheckbox').checked = false;
+    document.getElementById('intervalosGloboCheckbox').checked = false;
+    document.getElementById('jornaisCheckbox').checked = false;
+    updatePlaybackButtonVisibility();
 }
 
 function applySiteVolume() {
@@ -419,6 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('filmesCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('intervalosGloboCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('jornaisCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    document.getElementById('clearProgramas').addEventListener('click', clearProgramSelections);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
     document.addEventListener('keydown', handleVolumeShortcut);
     document.getElementById('volumeDown').addEventListener('click', () => changeSiteVolume(-10));

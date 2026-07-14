@@ -470,6 +470,22 @@ button:hover {
     display: block !important;
 }
 
+#clearProgramas {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 8px 0 0 !important;
+    padding: 7px 10px !important;
+    border: 1px solid rgba(0, 255, 0, 0.65) !important;
+    border-radius: 4px !important;
+    color: #00ff00 !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    font-family: "Courier New", monospace !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-shadow: 1px 1px #000 !important;
+}
+
 
 
 /* Controles fixos ao lado da TV */
