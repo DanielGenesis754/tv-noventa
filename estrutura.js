@@ -3,7 +3,8 @@
     desenhos: 'linksDesenhos.json',
     filmes: 'linksFilmes.json',
     intervalosGlobo: 'linksIntervalosGlobo.json',
-    jornais: 'linksJornais.json'
+    jornais: 'linksJornais.json',
+    entrevistas: 'linksEntrevista.json'
 };
 
 const videoLists = {
@@ -11,7 +12,8 @@ const videoLists = {
     desenhos: [],
     filmes: [],
     intervalosGlobo: [],
-    jornais: []
+    jornais: [],
+    entrevistas: []
 };
 
 const unavailableVideos = new Set();
@@ -158,6 +160,9 @@ function getSelectedVideos() {
     if (document.getElementById('jornaisCheckbox').checked) {
         selectedVideos = selectedVideos.concat(videoLists.jornais);
     }
+    if (document.getElementById('entrevistasCheckbox').checked) {
+        selectedVideos = selectedVideos.concat(videoLists.entrevistas);
+    }
 
     return selectedVideos;
 }
@@ -246,7 +251,7 @@ function showStaticTransition(videoFrame) {
     staticVideo.playsInline = true;
     staticVideo.loop = true;
     staticVideo.preload = 'auto';
-    staticVideo.volume = siteVolume / 100;
+    staticVideo.volume = siteVolume / 80;
 
     staticVideo.addEventListener('canplay', () => {
         staticDiv.classList.add('static-video-loaded');
@@ -344,7 +349,8 @@ function updatePlaybackButtonVisibility() {
         || document.getElementById('desenhosCheckbox').checked
         || document.getElementById('filmesCheckbox').checked
         || document.getElementById('intervalosGloboCheckbox').checked
-        || document.getElementById('jornaisCheckbox').checked;
+        || document.getElementById('jornaisCheckbox').checked
+        || document.getElementById('entrevistasCheckbox').checked
     const shouldEnableToggleButton = videosLoaded && (hasSelectedCategory || isPlaybackOn);
     const shouldEnableNextButton = videosLoaded && hasSelectedCategory;
 
@@ -358,6 +364,7 @@ function clearProgramSelections() {
     document.getElementById('filmesCheckbox').checked = false;
     document.getElementById('intervalosGloboCheckbox').checked = false;
     document.getElementById('jornaisCheckbox').checked = false;
+    document.getElementById('entrevistasCheckbox').checked = false;
     updatePlaybackButtonVisibility();
 }
 
@@ -429,6 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('filmesCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('intervalosGloboCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('jornaisCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    document.getElementById('entrevistasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('clearProgramas').addEventListener('click', clearProgramSelections);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
     document.addEventListener('keydown', handleVolumeShortcut);
