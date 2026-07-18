@@ -4,11 +4,13 @@
     filmes: 'linksFilmes.json',
     intervalosGlobo: 'linksIntervalosGlobo.json',
     jornais: 'linksJornais.json',
-    entrevistas: 'linksEntrevista.json'
+    entrevistas: 'linksEntrevista.json',
+    humor: 'LinksHumor.json'
 };
 
 const videoLists = {
     programas: [],
+    humor:[],
     desenhos: [],
     filmes: [],
     intervalosGlobo: [],
@@ -161,6 +163,9 @@ function getSelectedVideos() {
         selectedVideos = selectedVideos.concat(videoLists.jornais);
     }
     if (document.getElementById('entrevistasCheckbox').checked) {
+        selectedVideos = selectedVideos.concat(videoLists.entrevistas);
+    }
+    if (document.getElementById('humorCheckbox').checked) {
         selectedVideos = selectedVideos.concat(videoLists.entrevistas);
     }
 
@@ -351,6 +356,7 @@ function updatePlaybackButtonVisibility() {
         || document.getElementById('intervalosGloboCheckbox').checked
         || document.getElementById('jornaisCheckbox').checked
         || document.getElementById('entrevistasCheckbox').checked
+        || document.getElementById('humorCheckbox').checked
     const shouldEnableToggleButton = videosLoaded && (hasSelectedCategory || isPlaybackOn);
     const shouldEnableNextButton = videosLoaded && hasSelectedCategory;
 
@@ -365,6 +371,7 @@ function clearProgramSelections() {
     document.getElementById('intervalosGloboCheckbox').checked = false;
     document.getElementById('jornaisCheckbox').checked = false;
     document.getElementById('entrevistasCheckbox').checked = false;
+    document.getElementById('humorCheckbox').checked = false;
     updatePlaybackButtonVisibility();
 }
 
@@ -437,6 +444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('intervalosGloboCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('jornaisCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('entrevistasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    document.getElementById('humorCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
     document.getElementById('clearProgramas').addEventListener('click', clearProgramSelections);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
     document.addEventListener('keydown', handleVolumeShortcut);
