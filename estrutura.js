@@ -5,17 +5,17 @@
     intervalosGlobo: 'linksIntervalosGlobo.json',
     jornais: 'linksJornais.json',
     entrevistas: 'linksEntrevista.json',
-    humor: 'LinksHumor.json'
+    humor: 'linksHumor.json'
 };
 
 const videoLists = {
     programas: [],
-    humor:[],
     desenhos: [],
     filmes: [],
     intervalosGlobo: [],
     jornais: [],
-    entrevistas: []
+    entrevistas: [],
+    humor: []
 };
 
 const unavailableVideos = new Set();
