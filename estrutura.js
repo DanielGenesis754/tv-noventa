@@ -166,7 +166,7 @@ function getSelectedVideos() {
         selectedVideos = selectedVideos.concat(videoLists.entrevistas);
     }
     if (document.getElementById('humorCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.entrevistas);
+        selectedVideos = selectedVideos.concat(videoLists.humor);
     }
 
     return selectedVideos;
