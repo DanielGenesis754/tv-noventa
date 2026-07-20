@@ -18,6 +18,16 @@ const videoLists = {
     humor: []
 };
 
+const categories = [
+    { key: 'programas', checkboxId: 'programasCheckbox' },
+    { key: 'desenhos', checkboxId: 'desenhosCheckbox' },
+    { key: 'filmes', checkboxId: 'filmesCheckbox' },
+    { key: 'intervalosGlobo', checkboxId: 'intervalosGloboCheckbox' },
+    { key: 'jornais', checkboxId: 'jornaisCheckbox' },
+    { key: 'entrevistas', checkboxId: 'entrevistasCheckbox' },
+    { key: 'humor', checkboxId: 'humorCheckbox' }
+];
+
 const unavailableVideos = new Set();
 
 let isPlaybackOn = false;
@@ -26,7 +36,7 @@ let videosLoaded = false;
 let youtubeApiPromise = null;
 let currentPlayer = null;
 let siteVolume = 80;
-let volumeDisplayTimeout = null;
+let playbackVersion = 0;
 
 async function loadVideoList(source) {
     const response = await fetch(source, { cache: 'no-store' });
@@ -68,7 +78,7 @@ function loadYouTubeApi() {
         return youtubeApiPromise;
     }
 
-    youtubeApiPromise = new Promise((resolve) => {
+    youtubeApiPromise = new Promise((resolve, reject) => {
         const previousReadyCallback = window.onYouTubeIframeAPIReady;
 
         window.onYouTubeIframeAPIReady = () => {
@@ -76,11 +86,19 @@ function loadYouTubeApi() {
                 previousReadyCallback();
             }
 
-            resolve(window.YT);
+            if (window.YT && window.YT.Player) {
+                resolve(window.YT);
+            } else {
+                reject(new Error('A API do YouTube foi carregada sem disponibilizar o player.'));
+            }
         };
 
         const script = document.createElement('script');
         script.src = 'https://www.youtube.com/iframe_api';
+        script.onerror = () => {
+            youtubeApiPromise = null;
+            reject(new Error('Nao foi possivel carregar a API do YouTube.'));
+        };
         document.head.appendChild(script);
     });
 
@@ -111,7 +129,8 @@ function parseYouTubeEmbedUrl(videoUrl) {
     if (url.searchParams.has('start')) {
         playerVars.start = url.searchParams.get('start');
     }
-if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
         playerVars.origin = window.location.origin;
     }
 
@@ -141,42 +160,22 @@ function getRandomVideo(videosArray) {
 }
 
 function getSelectedVideos() {
-    let selectedVideos = [];
-
-    if (document.getElementById('programasCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.programas);
-    }
-
-    if (document.getElementById('desenhosCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.desenhos);
-    }
-
-    if (document.getElementById('filmesCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.filmes);
-    }
-
-    if (document.getElementById('intervalosGloboCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.intervalosGlobo);
-    }
-
-    if (document.getElementById('jornaisCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.jornais);
-    }
-    if (document.getElementById('entrevistasCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.entrevistas);
-    }
-    if (document.getElementById('humorCheckbox').checked) {
-        selectedVideos = selectedVideos.concat(videoLists.humor);
-    }
-
-    return selectedVideos;
+    return categories.flatMap(({ key, checkboxId }) => (
+        document.getElementById(checkboxId).checked ? videoLists[key] : []
+    ));
 }
 
 function getAvailableSelectedVideos() {
     const selectedVideos = getSelectedVideos();
-    const availableVideos = selectedVideos.filter((videoUrl) => !unavailableVideos.has(videoUrl));
+    return selectedVideos.filter((videoUrl) => !unavailableVideos.has(videoUrl));
+}
 
-    return availableVideos.length > 0 ? availableVideos : selectedVideos;
+function hasSelectedCategory() {
+    return categories.some(({ checkboxId }) => document.getElementById(checkboxId).checked);
+}
+
+function isCurrentPlayback(version) {
+    return isPlaybackOn && version === playbackVersion;
 }
 
 function disableYouTubeCaptions(player) {
@@ -196,8 +195,12 @@ function disableYouTubeCaptions(player) {
     }
 }
 
-async function createYouTubePlayer(videoUrl) {
+async function createYouTubePlayer(videoUrl, version) {
     await loadYouTubeApi();
+
+    if (!isCurrentPlayback(version)) {
+        return null;
+    }
 
     const videoFrame = document.getElementById('video-frame');
     const playerHost = document.createElement('div');
@@ -206,13 +209,18 @@ async function createYouTubePlayer(videoUrl) {
     playerHost.id = 'youtube-player-host';
     videoFrame.appendChild(playerHost);
 
-    currentPlayer = new YT.Player(playerHost, {
+    const player = new YT.Player(playerHost, {
         width: '100%',
         height: '100%',
         videoId,
         playerVars,
         events: {
             onReady: (event) => {
+                if (!isCurrentPlayback(version) || event.target !== currentPlayer) {
+                    event.target.destroy();
+                    return;
+                }
+
                 if (siteVolume > 0 && typeof event.target.unMute === 'function') {
                     event.target.unMute();
                 }
@@ -225,15 +233,25 @@ async function createYouTubePlayer(videoUrl) {
                 setTimeout(() => disableYouTubeCaptions(event.target), 2000);
             },
             onStateChange: (event) => {
-                if (window.YT && event.data === YT.PlayerState.PLAYING) {
+                if (isCurrentPlayback(version) && event.target === currentPlayer && window.YT && event.data === YT.PlayerState.PLAYING) {
                     disableYouTubeCaptions(event.target);
                 }
             },
             onError: (event) => {
-                skipUnavailableVideo(videoUrl, event.data);
+                if (isCurrentPlayback(version) && event.target === currentPlayer) {
+                    skipUnavailableVideo(videoUrl, event.data);
+                }
             }
         }
     });
+
+    if (!isCurrentPlayback(version)) {
+        player.destroy();
+        return null;
+    }
+
+    currentPlayer = player;
+    return player;
 }
 
 function skipUnavailableVideo(videoUrl, errorCode) {
@@ -256,7 +274,7 @@ function showStaticTransition(videoFrame) {
     staticVideo.playsInline = true;
     staticVideo.loop = true;
     staticVideo.preload = 'auto';
-    staticVideo.volume = siteVolume / 80;
+    staticVideo.volume = siteVolume / 100;
 
     staticVideo.addEventListener('canplay', () => {
         staticDiv.classList.add('static-video-loaded');
@@ -300,14 +318,16 @@ function hideStaticTransition(staticDiv) {
 }
 
 function playNextVideo() {
-    if (!videosLoaded) {
+    if (!videosLoaded || !isPlaybackOn) {
         return;
     }
 
+    const version = ++playbackVersion;
     const videoFrame = document.getElementById('video-frame');
     const nextVideoUrl = getRandomVideo(getAvailableSelectedVideos());
 
     if (!nextVideoUrl) {
+        console.warn('Nao ha videos disponiveis nas categorias selecionadas.');
         return;
     }
 
@@ -316,13 +336,23 @@ function playNextVideo() {
 
     const staticDiv = showStaticTransition(videoFrame);
 
-    createYouTubePlayer(nextVideoUrl)
-        .then(() => {
+    createYouTubePlayer(nextVideoUrl, version)
+        .then((player) => {
+            if (!player || !isCurrentPlayback(version)) {
+                return;
+            }
+
             setTimeout(() => {
-                hideStaticTransition(staticDiv);
+                if (isCurrentPlayback(version)) {
+                    hideStaticTransition(staticDiv);
+                }
             }, 1000);
         })
         .catch((error) => {
+            if (!isCurrentPlayback(version)) {
+                return;
+            }
+
             console.error(error);
             skipUnavailableVideo(nextVideoUrl, 'erro-local');
         });
@@ -335,43 +365,36 @@ function togglePlayback() {
     const videoFrame = document.getElementById('video-frame');
 
     if (isPlaybackOn) {
+        playbackVersion += 1;
         destroyCurrentPlayer();
         videoFrame.innerHTML = '';
         togglePlaybackButton.innerText = 'Ligar TV';
         isPlaybackOn = false;
+        updatePlaybackButtonVisibility();
         return;
     }
 
-    playNextVideo();
-    togglePlaybackButton.innerText = 'Desligar TV';
     isPlaybackOn = true;
+    togglePlaybackButton.innerText = 'Desligar TV';
+    updatePlaybackButtonVisibility();
+    playNextVideo();
 }
 
 function updatePlaybackButtonVisibility() {
     const togglePlaybackButton = document.getElementById('togglePlayback');
     const nextVideoButton = document.getElementById('nextVideo');
-    const hasSelectedCategory = document.getElementById('programasCheckbox').checked
-        || document.getElementById('desenhosCheckbox').checked
-        || document.getElementById('filmesCheckbox').checked
-        || document.getElementById('intervalosGloboCheckbox').checked
-        || document.getElementById('jornaisCheckbox').checked
-        || document.getElementById('entrevistasCheckbox').checked
-        || document.getElementById('humorCheckbox').checked
-    const shouldEnableToggleButton = videosLoaded && (hasSelectedCategory || isPlaybackOn);
-    const shouldEnableNextButton = videosLoaded && hasSelectedCategory;
+    const selectedCategory = hasSelectedCategory();
+    const shouldEnableToggleButton = videosLoaded && (selectedCategory || isPlaybackOn);
+    const shouldEnableNextButton = videosLoaded && selectedCategory && isPlaybackOn;
 
     togglePlaybackButton.disabled = !shouldEnableToggleButton;
     nextVideoButton.disabled = !shouldEnableNextButton;
 }
 
 function clearProgramSelections() {
-    document.getElementById('programasCheckbox').checked = false;
-    document.getElementById('desenhosCheckbox').checked = false;
-    document.getElementById('filmesCheckbox').checked = false;
-    document.getElementById('intervalosGloboCheckbox').checked = false;
-    document.getElementById('jornaisCheckbox').checked = false;
-    document.getElementById('entrevistasCheckbox').checked = false;
-    document.getElementById('humorCheckbox').checked = false;
+    categories.forEach(({ checkboxId }) => {
+        document.getElementById(checkboxId).checked = false;
+    });
     updatePlaybackButtonVisibility();
 }
 
@@ -447,13 +470,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('togglePlayback').disabled = true;
     document.getElementById('nextVideo').disabled = true;
 
-    document.getElementById('programasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
-    document.getElementById('desenhosCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
-    document.getElementById('filmesCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
-    document.getElementById('intervalosGloboCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
-    document.getElementById('jornaisCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
-    document.getElementById('entrevistasCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
-    document.getElementById('humorCheckbox').addEventListener('change', updatePlaybackButtonVisibility);
+    categories.forEach(({ checkboxId }) => {
+        document.getElementById(checkboxId).addEventListener('change', updatePlaybackButtonVisibility);
+    });
     document.getElementById('clearProgramas').addEventListener('click', clearProgramSelections);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
     document.addEventListener('keydown', handleVolumeShortcut);
@@ -467,15 +486,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     try {
-        await loadAllVideoLists();
-        loadYouTubeApi();
+        await Promise.all([loadAllVideoLists(), loadYouTubeApi()]);
         updatePlaybackButtonVisibility();
     } catch (error) {
         showVideoLoadError(error);
     }
 });
-
-
 
 
 
