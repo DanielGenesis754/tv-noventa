@@ -424,6 +424,15 @@ function handleVolumeShortcut(event) {
         event.preventDefault();
         changeSiteVolume(-10);
     }
+
+    if (event.key === 'ArrowRight') {
+        const nextVideoButton = document.getElementById('nextVideo');
+
+        if (!nextVideoButton.disabled) {
+            event.preventDefault();
+            nextVideoButton.click();
+        }
+    }
 }
 
 function showVideoLoadError(error) {
@@ -465,7 +474,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showVideoLoadError(error);
     }
 });
-
 
 
 
