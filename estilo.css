@@ -267,6 +267,7 @@ button:hover {
 }
 
 #togglePlayback,
+#previousVideo,
 #nextVideo {
     position: fixed;
     bottom: 40px;
@@ -280,6 +281,11 @@ button:hover {
 
 #nextVideo {
     left: calc(50vw + 45px);
+    min-width: 44px;
+}
+
+#previousVideo {
+    left: calc(50vw - 35px);
     min-width: 44px;
 }
 
@@ -340,6 +346,7 @@ button:hover {
 
 
     #togglePlayback,
+    #previousVideo,
     #nextVideo {
         bottom: 20px;
         padding: 10px 14px;
@@ -355,6 +362,11 @@ button:hover {
         left: 50%;
         transform: translateX(8px);
     }
+
+    #previousVideo {
+        left: 50%;
+        transform: translateX(calc(-100% - 58px));
+    }
 }
 
 @media (max-height: 520px) {
@@ -364,6 +376,7 @@ button:hover {
 
 
     #togglePlayback,
+    #previousVideo,
     #nextVideo {
         bottom: 12px;
     }
@@ -490,6 +503,7 @@ button:hover {
 
 /* Controles fixos ao lado da TV */
 #togglePlayback,
+#previousVideo,
 #nextVideo,
 #volumeDown,
 #volumeUp {
@@ -510,8 +524,28 @@ button:hover {
 #nextVideo {
     top: 410px !important;
     bottom: auto !important;
+    left: max(780px, calc((100vw - 1200px) / 2 + 780px)) !important;
     width: 52px !important;
     min-width: 52px !important;
+}
+
+#previousVideo {
+    top: 410px !important;
+    bottom: auto !important;
+    width: 52px !important;
+    min-width: 52px !important;
+}
+
+#channelDisplay {
+    position: fixed;
+    top: 320px;
+    left: max(720px, calc((100vw - 1200px) / 2 + 720px));
+    z-index: 1000;
+    color: #00ff00;
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 1px 1px #000;
 }
 
 #volumeDown,

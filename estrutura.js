@@ -31,12 +31,13 @@ const categories = [
 const unavailableVideos = new Set();
 
 let isPlaybackOn = false;
-let lastVideoUrl = null;
 let videosLoaded = false;
 let youtubeApiPromise = null;
 let currentPlayer = null;
 let siteVolume = 80;
 let playbackVersion = 0;
+let channelPlaylist = [];
+let currentChannelIndex = -1;
 
 async function loadVideoList(source) {
     const response = await fetch(source, { cache: 'no-store' });
@@ -145,29 +146,10 @@ function destroyCurrentPlayer() {
     currentPlayer = null;
 }
 
-function getRandomVideo(videosArray) {
-    if (videosArray.length === 0) {
-        return null;
-    }
-
-    let nextVideoUrl;
-
-    do {
-        nextVideoUrl = videosArray[Math.floor(Math.random() * videosArray.length)];
-    } while (videosArray.length > 1 && nextVideoUrl === lastVideoUrl);
-
-    return nextVideoUrl;
-}
-
 function getSelectedVideos() {
     return categories.flatMap(({ key, checkboxId }) => (
         document.getElementById(checkboxId).checked ? videoLists[key] : []
     ));
-}
-
-function getAvailableSelectedVideos() {
-    const selectedVideos = getSelectedVideos();
-    return selectedVideos.filter((videoUrl) => !unavailableVideos.has(videoUrl));
 }
 
 function hasSelectedCategory() {
@@ -176,6 +158,36 @@ function hasSelectedCategory() {
 
 function isCurrentPlayback(version) {
     return isPlaybackOn && version === playbackVersion;
+}
+
+function shuffleVideos(videos) {
+    const shuffledVideos = [...videos];
+
+    for (let index = shuffledVideos.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledVideos[index], shuffledVideos[randomIndex]] = [shuffledVideos[randomIndex], shuffledVideos[index]];
+    }
+
+    return shuffledVideos;
+}
+
+function updateChannelDisplay() {
+    const channelDisplay = document.getElementById('channelDisplay');
+
+    if (channelPlaylist.length === 0) {
+        channelDisplay.innerText = 'Sem canais';
+        return;
+    }
+
+    const channelNumber = currentChannelIndex >= 0 ? currentChannelIndex + 1 : '--';
+    channelDisplay.innerText = `Canal ${channelNumber} / ${channelPlaylist.length}`;
+}
+
+function rebuildChannelPlaylist() {
+    const uniqueVideos = [...new Set(getSelectedVideos())];
+    channelPlaylist = shuffleVideos(uniqueVideos.filter((videoUrl) => !unavailableVideos.has(videoUrl)));
+    currentChannelIndex = -1;
+    updateChannelDisplay();
 }
 
 function disableYouTubeCaptions(player) {
@@ -258,8 +270,20 @@ function skipUnavailableVideo(videoUrl, errorCode) {
     unavailableVideos.add(videoUrl);
     console.warn(`Video indisponivel, pulando para outro. Codigo YouTube: ${errorCode}`, videoUrl);
 
-    if (isPlaybackOn) {
-        playNextVideo();
+    const unavailableIndex = channelPlaylist.indexOf(videoUrl);
+
+    if (unavailableIndex >= 0) {
+        channelPlaylist.splice(unavailableIndex, 1);
+
+        if (currentChannelIndex >= channelPlaylist.length) {
+            currentChannelIndex = 0;
+        }
+
+        updateChannelDisplay();
+    }
+
+    if (isPlaybackOn && channelPlaylist.length > 0) {
+        playChannel(currentChannelIndex);
     }
 }
 
@@ -317,20 +341,22 @@ function hideStaticTransition(staticDiv) {
     }, 500);
 }
 
-function playNextVideo() {
+function playChannel(index) {
     if (!videosLoaded || !isPlaybackOn) {
         return;
     }
 
-    const version = ++playbackVersion;
-    const videoFrame = document.getElementById('video-frame');
-    const nextVideoUrl = getRandomVideo(getAvailableSelectedVideos());
-
-    if (!nextVideoUrl) {
+    if (channelPlaylist.length === 0) {
         console.warn('Nao ha videos disponiveis nas categorias selecionadas.');
         return;
     }
 
+    currentChannelIndex = (index + channelPlaylist.length) % channelPlaylist.length;
+    const version = ++playbackVersion;
+    const videoFrame = document.getElementById('video-frame');
+    const nextVideoUrl = channelPlaylist[currentChannelIndex];
+
+    updateChannelDisplay();
     destroyCurrentPlayer();
     videoFrame.innerHTML = '';
 
@@ -357,45 +383,82 @@ function playNextVideo() {
             skipUnavailableVideo(nextVideoUrl, 'erro-local');
         });
 
-    lastVideoUrl = nextVideoUrl;
+}
+
+function playNextVideo() {
+    playChannel(currentChannelIndex + 1);
+}
+
+function playPreviousVideo() {
+    playChannel(currentChannelIndex - 1);
+}
+
+function stopPlayback() {
+    const togglePlaybackButton = document.getElementById('togglePlayback');
+    const videoFrame = document.getElementById('video-frame');
+
+    playbackVersion += 1;
+    destroyCurrentPlayer();
+    videoFrame.innerHTML = '';
+    isPlaybackOn = false;
+    togglePlaybackButton.innerText = 'Ligar TV';
+    updatePlaybackButtonVisibility();
 }
 
 function togglePlayback() {
     const togglePlaybackButton = document.getElementById('togglePlayback');
-    const videoFrame = document.getElementById('video-frame');
 
     if (isPlaybackOn) {
-        playbackVersion += 1;
-        destroyCurrentPlayer();
-        videoFrame.innerHTML = '';
-        togglePlaybackButton.innerText = 'Ligar TV';
-        isPlaybackOn = false;
-        updatePlaybackButtonVisibility();
+        stopPlayback();
+        return;
+    }
+
+    if (channelPlaylist.length === 0) {
+        rebuildChannelPlaylist();
+    }
+
+    if (channelPlaylist.length === 0) {
         return;
     }
 
     isPlaybackOn = true;
     togglePlaybackButton.innerText = 'Desligar TV';
     updatePlaybackButtonVisibility();
-    playNextVideo();
+    playChannel(currentChannelIndex >= 0 ? currentChannelIndex : 0);
 }
 
 function updatePlaybackButtonVisibility() {
     const togglePlaybackButton = document.getElementById('togglePlayback');
     const nextVideoButton = document.getElementById('nextVideo');
+    const previousVideoButton = document.getElementById('previousVideo');
     const selectedCategory = hasSelectedCategory();
     const shouldEnableToggleButton = videosLoaded && (selectedCategory || isPlaybackOn);
-    const shouldEnableNextButton = videosLoaded && selectedCategory && isPlaybackOn;
+    const shouldEnableChannelButtons = videosLoaded && selectedCategory && isPlaybackOn && channelPlaylist.length > 0;
 
     togglePlaybackButton.disabled = !shouldEnableToggleButton;
-    nextVideoButton.disabled = !shouldEnableNextButton;
+    nextVideoButton.disabled = !shouldEnableChannelButtons;
+    previousVideoButton.disabled = !shouldEnableChannelButtons;
+}
+
+function handleCategoryChange() {
+    rebuildChannelPlaylist();
+
+    if (isPlaybackOn) {
+        if (channelPlaylist.length > 0) {
+            playChannel(0);
+        } else {
+            stopPlayback();
+        }
+    }
+
+    updatePlaybackButtonVisibility();
 }
 
 function clearProgramSelections() {
     categories.forEach(({ checkboxId }) => {
         document.getElementById(checkboxId).checked = false;
     });
-    updatePlaybackButtonVisibility();
+    handleCategoryChange();
 }
 
 function applySiteVolume() {
@@ -414,7 +477,7 @@ function applySiteVolume() {
     }
 
     if (staticVideo) {
-        staticVideo.volume = siteVolume / 100;
+        staticVideo.volume = siteVolume / 80;
         staticVideo.muted = siteVolume === 0;
     }
 }
@@ -456,6 +519,15 @@ function handleVolumeShortcut(event) {
             nextVideoButton.click();
         }
     }
+
+    if (event.key === 'ArrowLeft') {
+        const previousVideoButton = document.getElementById('previousVideo');
+
+        if (!previousVideoButton.disabled) {
+            event.preventDefault();
+            previousVideoButton.click();
+        }
+    }
 }
 
 function showVideoLoadError(error) {
@@ -469,9 +541,10 @@ function showVideoLoadError(error) {
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('togglePlayback').disabled = true;
     document.getElementById('nextVideo').disabled = true;
+    document.getElementById('previousVideo').disabled = true;
 
     categories.forEach(({ checkboxId }) => {
-        document.getElementById(checkboxId).addEventListener('change', updatePlaybackButtonVisibility);
+        document.getElementById(checkboxId).addEventListener('change', handleCategoryChange);
     });
     document.getElementById('clearProgramas').addEventListener('click', clearProgramSelections);
     document.getElementById('togglePlayback').addEventListener('click', togglePlayback);
@@ -484,16 +557,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             playNextVideo();
         }
     });
+    document.getElementById('previousVideo').addEventListener('click', () => {
+        if (isPlaybackOn) {
+            playPreviousVideo();
+        }
+    });
 
     try {
         await Promise.all([loadAllVideoLists(), loadYouTubeApi()]);
+        rebuildChannelPlaylist();
         updatePlaybackButtonVisibility();
     } catch (error) {
         showVideoLoadError(error);
     }
 });
-
-
 
 
 
