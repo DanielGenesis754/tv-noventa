@@ -1,5 +1,5 @@
 ﻿const videoSources = {
-    programas: 'linksPropagandas.json',
+    programas: 'linksPropagandas.json', // Lista de vídeos desta categoria.
     desenhos: 'linksDesenhos.json',
     filmes: 'linksFilmes.json',
     intervalosGlobo: 'linksIntervalosGlobo.json',
@@ -18,6 +18,7 @@ const videoLists = {
     humor: []
 };
 
+// Centraliza a relação entre categoria, lista carregada e checkbox da interface.
 const categories = [
     { key: 'programas', checkboxId: 'programasCheckbox' },
     { key: 'desenhos', checkboxId: 'desenhosCheckbox' },
@@ -28,14 +29,17 @@ const categories = [
     { key: 'humor', checkboxId: 'humorCheckbox' }
 ];
 
+// Vídeos que o YouTube recusou carregar não entram mais na grade atual.
 const unavailableVideos = new Set();
 
 let isPlaybackOn = false;
 let videosLoaded = false;
 let youtubeApiPromise = null;
 let currentPlayer = null;
-let siteVolume = 80;
+let siteVolume = 60;
+// Impede que carregamentos antigos sobrescrevam um vídeo escolhido mais recentemente.
 let playbackVersion = 0;
+// A grade é embaralhada uma vez e permanece estável até os filtros mudarem.
 let channelPlaylist = [];
 let currentChannelIndex = -1;
 
@@ -56,6 +60,7 @@ async function loadVideoList(source) {
 }
 
 async function loadAllVideoLists() {
+    // Carrega todas as categorias em paralelo para liberar a TV apenas quando estiver pronta.
     const entries = await Promise.all(
         Object.entries(videoSources).map(async ([category, source]) => {
             const videos = await loadVideoList(source);
@@ -79,6 +84,7 @@ function loadYouTubeApi() {
         return youtubeApiPromise;
     }
 
+    // Reaproveita uma única Promise: a API do YouTube só precisa ser inserida uma vez.
     youtubeApiPromise = new Promise((resolve, reject) => {
         const previousReadyCallback = window.onYouTubeIframeAPIReady;
 
@@ -107,6 +113,7 @@ function loadYouTubeApi() {
 }
 
 function parseYouTubeEmbedUrl(videoUrl) {
+    // Aceita links de embed ou links comuns do YouTube e obtém somente o ID do vídeo.
     const url = new URL(videoUrl, window.location.href);
     const embedMatch = url.pathname.match(/\/embed\/([^/?]+)/);
     const videoId = embedMatch ? embedMatch[1] : url.searchParams.get('v');
@@ -147,6 +154,7 @@ function destroyCurrentPlayer() {
 }
 
 function getSelectedVideos() {
+    // Une apenas as listas cujas categorias estão marcadas na tela.
     return categories.flatMap(({ key, checkboxId }) => (
         document.getElementById(checkboxId).checked ? videoLists[key] : []
     ));
@@ -160,6 +168,7 @@ function isCurrentPlayback(version) {
     return isPlaybackOn && version === playbackVersion;
 }
 
+// Fisher-Yates: embaralha ao montar a grade, nunca a cada troca de canal.
 function shuffleVideos(videos) {
     const shuffledVideos = [...videos];
 
@@ -172,6 +181,7 @@ function shuffleVideos(videos) {
 }
 
 function updateChannelDisplay() {
+    // Mostra a posição atual para o usuário saber que pode voltar ao mesmo vídeo.
     const channelDisplay = document.getElementById('channelDisplay');
 
     if (channelPlaylist.length === 0) {
@@ -184,6 +194,7 @@ function updateChannelDisplay() {
 }
 
 function rebuildChannelPlaylist() {
+    // Set remove links duplicados antes de formar a sequência de canais.
     const uniqueVideos = [...new Set(getSelectedVideos())];
     channelPlaylist = shuffleVideos(uniqueVideos.filter((videoUrl) => !unavailableVideos.has(videoUrl)));
     currentChannelIndex = -1;
@@ -210,6 +221,7 @@ function disableYouTubeCaptions(player) {
 async function createYouTubePlayer(videoUrl, version) {
     await loadYouTubeApi();
 
+    // Se o usuário mudou de canal enquanto a API carregava, abandona esta solicitação antiga.
     if (!isCurrentPlayback(version)) {
         return null;
     }
@@ -270,6 +282,7 @@ function skipUnavailableVideo(videoUrl, errorCode) {
     unavailableVideos.add(videoUrl);
     console.warn(`Video indisponivel, pulando para outro. Codigo YouTube: ${errorCode}`, videoUrl);
 
+    // Remove o canal com erro sem reorganizar os demais vídeos da sequência.
     const unavailableIndex = channelPlaylist.indexOf(videoUrl);
 
     if (unavailableIndex >= 0) {
@@ -351,6 +364,7 @@ function playChannel(index) {
         return;
     }
 
+    // O módulo permite circular do último canal para o primeiro, e vice-versa.
     currentChannelIndex = (index + channelPlaylist.length) % channelPlaylist.length;
     const version = ++playbackVersion;
     const videoFrame = document.getElementById('video-frame');
@@ -386,14 +400,22 @@ function playChannel(index) {
 }
 
 function playNextVideo() {
+    // Avançar usa o índice já existente; não há novo sorteio aqui.
     playChannel(currentChannelIndex + 1);
 }
 
 function playPreviousVideo() {
+    // Retroceder usa a mesma grade, portanto retorna ao vídeo já visto.
     playChannel(currentChannelIndex - 1);
 }
 
+function setTvLed(isOn) {
+    // O CSS cuida da transição de brilho; o JavaScript só informa se a TV está ligada.
+    document.getElementById('tvLed').classList.toggle('is-on', isOn);
+}
+
 function stopPlayback() {
+    // Invalida também qualquer carregamento assíncrono ainda pendente.
     const togglePlaybackButton = document.getElementById('togglePlayback');
     const videoFrame = document.getElementById('video-frame');
 
@@ -401,6 +423,7 @@ function stopPlayback() {
     destroyCurrentPlayer();
     videoFrame.innerHTML = '';
     isPlaybackOn = false;
+    setTvLed(false);
     togglePlaybackButton.innerText = 'Ligar TV';
     updatePlaybackButtonVisibility();
 }
@@ -422,6 +445,7 @@ function togglePlayback() {
     }
 
     isPlaybackOn = true;
+    setTvLed(true);
     togglePlaybackButton.innerText = 'Desligar TV';
     updatePlaybackButtonVisibility();
     playChannel(currentChannelIndex >= 0 ? currentChannelIndex : 0);
@@ -441,6 +465,7 @@ function updatePlaybackButtonVisibility() {
 }
 
 function handleCategoryChange() {
+    // Os filtros definem uma nova grade. Se a TV estiver ligada, ela começa no canal 1 dessa grade.
     rebuildChannelPlaylist();
 
     if (isPlaybackOn) {
@@ -539,6 +564,7 @@ function showVideoLoadError(error) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Os controles só são liberados após JSONs e API do YouTube terminarem de carregar.
     document.getElementById('togglePlayback').disabled = true;
     document.getElementById('nextVideo').disabled = true;
     document.getElementById('previousVideo').disabled = true;
@@ -571,11 +597,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showVideoLoadError(error);
     }
 });
-
-
-
-
-
 
 
 
