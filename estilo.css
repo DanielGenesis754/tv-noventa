@@ -140,8 +140,8 @@ section {
 #tvLed {
     position: absolute;
     z-index: 3;
-    top: 69.8%;
-    left: 35.3%;
+    top: 85%;
+    left: 34%;
     width: 9px;
     height: 9px;
     border-radius: 50%;
